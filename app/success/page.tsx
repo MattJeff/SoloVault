@@ -5,6 +5,9 @@ import { useSearchParams } from 'next/navigation';
 import { Check, Download } from 'lucide-react';
 import Link from 'next/link';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
