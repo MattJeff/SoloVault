@@ -147,10 +147,10 @@ export default function ContactPage() {
               </p>
 
               <a
-                href="https://cal.com/mathishiguinen"
+                href="https://calendly.com/mathishiguinen/parlons-de-votre-projet"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2 mb-8"
+                className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
               >
                 <Calendar className="w-5 h-5" />
                 Planifier un appel de 30 min
