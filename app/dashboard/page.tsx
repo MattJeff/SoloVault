@@ -1,25 +1,33 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import FilterBar from '@/components/FilterBar';
 import ProjectCard from '@/components/ProjectCard';
 import ProjectModal from '@/components/ProjectModal';
 import EmailGate from '@/components/EmailGate';
-import DownloadButton from '@/components/DownloadButton';
+import DownloadModal from '@/components/DownloadModal';
 import { Project } from '@/lib/types';
 import { filterProjects } from '@/lib/filters';
 import projectsData from '@/data/projects.json';
 
 export default function HomePage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [filters, setFilters] = useState({
     revenue: 'all',
     mvp: null as string | null,
     solo: false,
     search: ''
   });
+
+  // Écouter l'événement d'ouverture de la modal depuis la navbar
+  useEffect(() => {
+    const handleOpenModal = () => setShowDownloadModal(true);
+    window.addEventListener('openDownloadModal', handleOpenModal);
+    return () => window.removeEventListener('openDownloadModal', handleOpenModal);
+  }, []);
 
   // Filtrer les projets
   const filteredProjects = useMemo(() => {
@@ -39,7 +47,7 @@ export default function HomePage() {
           onFilterChange={setFilters}
         />
 
-        <section className="py-12 px-4 pb-32">
+        <section className="py-12 px-4">
           <div className="container mx-auto max-w-7xl">
             {filteredProjects.length === 0 ? (
               <div className="text-center py-20">
@@ -61,11 +69,13 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Download Button */}
-        <DownloadButton 
-          filteredProjects={filteredProjects}
-          totalProjects={projectsData.length}
-        />
+        {/* Download Modal */}
+        {showDownloadModal && (
+          <DownloadModal 
+            allProjects={projectsData as Project[]}
+            onClose={() => setShowDownloadModal(false)}
+          />
+        )}
 
         {selectedProject && (
           <ProjectModal

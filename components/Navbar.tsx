@@ -30,7 +30,13 @@ export default function Navbar() {
             <Link href="/contact" className="text-zinc-300 hover:text-white transition">
               Contact
             </Link>
-            <button className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2">
+            <button 
+              onClick={() => {
+                const event = new CustomEvent('openDownloadModal');
+                window.dispatchEvent(event);
+              }}
+              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2"
+            >
               <Download className="w-4 h-4" />
               Télécharger (19€)
             </button>
@@ -57,7 +63,14 @@ export default function Navbar() {
             <Link href="/contact" className="block py-2 text-zinc-300 hover:text-white transition">
               Contact
             </Link>
-            <button className="mt-4 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition">
+            <button 
+              onClick={() => {
+                const event = new CustomEvent('openDownloadModal');
+                window.dispatchEvent(event);
+                setIsMenuOpen(false);
+              }}
+              className="mt-4 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+            >
               Télécharger (19€)
             </button>
           </div>
