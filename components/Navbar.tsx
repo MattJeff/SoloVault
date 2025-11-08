@@ -24,10 +24,10 @@ export default function Navbar() {
             <Link href="/dashboard" className="text-zinc-300 hover:text-white transition">
               Projets
             </Link>
-            <Link href="#about" className="text-zinc-300 hover:text-white transition">
+            <Link href="/about" className="text-zinc-300 hover:text-white transition">
               À propos
             </Link>
-            <Link href="#contact" className="text-zinc-300 hover:text-white transition">
+            <Link href="/contact" className="text-zinc-300 hover:text-white transition">
               Contact
             </Link>
             <button className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2">
@@ -51,10 +51,10 @@ export default function Navbar() {
             <Link href="/dashboard" className="block py-2 text-zinc-300 hover:text-white transition">
               Projets
             </Link>
-            <Link href="#about" className="block py-2 text-zinc-300 hover:text-white transition">
+            <Link href="/about" className="block py-2 text-zinc-300 hover:text-white transition">
               À propos
             </Link>
-            <Link href="#contact" className="block py-2 text-zinc-300 hover:text-white transition">
+            <Link href="/contact" className="block py-2 text-zinc-300 hover:text-white transition">
               Contact
             </Link>
             <button className="mt-4 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition">

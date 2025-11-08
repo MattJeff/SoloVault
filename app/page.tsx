@@ -22,10 +22,10 @@ export default function LandingPage() {
               <Link href="/dashboard" className="text-zinc-400 hover:text-white transition">
                 Projets
               </Link>
-              <Link href="/dashboard" className="text-zinc-400 hover:text-white transition">
+              <Link href="/about" className="text-zinc-400 hover:text-white transition">
                 À propos
               </Link>
-              <Link href="/dashboard" className="text-zinc-400 hover:text-white transition">
+              <Link href="/contact" className="text-zinc-400 hover:text-white transition">
                 Contact
               </Link>
               <Link 

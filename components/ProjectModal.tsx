@@ -44,33 +44,9 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
     window.location.href = url;
   };
 
-  const handleQuoteRequest = async () => {
-    const userEmail = localStorage.getItem('solovault_email');
-    
-    if (!userEmail) {
-      alert('Veuillez d\'abord entrer votre email');
-      return;
-    }
-
-    const message = prompt(`Demande de devis pour un projet similaire à "${project.name}"\n\nDécrivez brièvement votre projet :`);
-    
-    if (!message) return;
-
-    try {
-      await fetch('/api/quote-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userEmail,
-          projectReference: project.name,
-          message
-        })
-      });
-
-      alert('✅ Demande de devis envoyée ! Nous vous contacterons sous 24h.');
-    } catch (error) {
-      alert('❌ Erreur lors de l\'envoi. Veuillez réessayer.');
-    }
+  const handleQuoteRequest = () => {
+    // Rediriger vers la page de devis avec le projet sélectionné
+    window.location.href = `/quote?project=${project.id}`;
   };
 
   return (
