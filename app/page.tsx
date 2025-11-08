@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { TrendingUp, Users, Zap } from 'lucide-react';
 
 export default function LandingPage() {
@@ -102,52 +103,16 @@ export default function LandingPage() {
           </div>
 
           {/* Preview Image */}
-          <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900">
+          <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
-            
-            {/* Dashboard Preview Mockup */}
-            <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-8">
-              {/* Fake Browser Bar */}
-              <div className="bg-zinc-800 rounded-t-lg p-3 flex items-center gap-2 mb-4">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-                <div className="flex-1 bg-zinc-700 rounded px-3 py-1 text-xs text-zinc-400">
-                  solovault.com/dashboard
-                </div>
-              </div>
-              
-              {/* Fake Dashboard Content */}
-              <div className="space-y-4">
-                {/* Search Bar */}
-                <div className="bg-zinc-800/50 rounded-lg p-3 flex items-center gap-2">
-                  <div className="w-4 h-4 bg-orange-500/30 rounded"></div>
-                  <div className="flex-1 h-3 bg-zinc-700/50 rounded"></div>
-                </div>
-                
-                {/* Filter Pills */}
-                <div className="flex gap-2 flex-wrap">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-orange-500/20 border border-orange-500/30 rounded-full px-3 py-1">
-                      <div className="h-2 w-12 bg-orange-500/40 rounded"></div>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Project Cards Grid */}
-                <div className="grid grid-cols-3 gap-3">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 space-y-2">
-                      <div className="h-3 bg-zinc-700/50 rounded w-3/4"></div>
-                      <div className="h-2 bg-zinc-700/30 rounded w-1/2"></div>
-                      <div className="h-2 bg-orange-500/30 rounded w-2/3"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <Image 
+              src="/exemple_landing.png" 
+              alt="Dashboard Preview - SoloVault" 
+              width={1200}
+              height={700}
+              className="w-full h-auto"
+              priority
+            />
             
             {/* Overlay CTA */}
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-20">
