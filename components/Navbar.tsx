@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Menu, X, Download, Shield } from 'lucide-react';
+import { Menu, X, Download } from 'lucide-react';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,13 +30,6 @@ export default function Navbar() {
             <Link href="#contact" className="text-zinc-300 hover:text-white transition">
               Contact
             </Link>
-            <Link 
-              href="/admin" 
-              className="text-zinc-300 hover:text-white transition flex items-center gap-2"
-            >
-              <Shield className="w-4 h-4" />
-              Admin
-            </Link>
             <button className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2">
               <Download className="w-4 h-4" />
               Télécharger (19€)
@@ -63,9 +56,6 @@ export default function Navbar() {
             </Link>
             <Link href="#contact" className="block py-2 text-zinc-300 hover:text-white transition">
               Contact
-            </Link>
-            <Link href="/admin" className="block py-2 text-zinc-300 hover:text-white transition">
-              Admin
             </Link>
             <button className="mt-4 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition">
               Télécharger (19€)
