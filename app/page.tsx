@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { TrendingUp, Users, Zap } from 'lucide-react';
 
 export default function LandingPage() {
@@ -94,19 +95,16 @@ export default function LandingPage() {
           </div>
 
           {/* Preview Image */}
-          <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900">
+          <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-            
-            {/* Placeholder avec screenshot du dashboard */}
-            <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center p-8">
-                  <div className="text-6xl mb-4">📊</div>
-                  <div className="text-2xl font-bold mb-2">Dashboard Preview</div>
-                  <div className="text-zinc-400">Aperçu de la base de données complète</div>
-                </div>
-              </div>
-            </div>
+            <Image 
+              src="/exemple_landing.png" 
+              alt="Dashboard Preview" 
+              width={1200}
+              height={700}
+              className="w-full h-auto"
+              priority
+            />
             
             {/* Overlay CTA */}
             <div className="absolute bottom-0 left-0 right-0 p-8 z-20">

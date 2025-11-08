@@ -34,33 +34,48 @@ export default function AdminPage() {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      
+      // Lire à partir de la ligne 2 (ignorer la première ligne si c'est un header)
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { range: 1 });
+
+      console.log('📊 Données Excel reçues:', jsonData.length, 'lignes');
+      console.log('🔍 Première ligne:', jsonData[0]);
 
       // 2. Mapper les données vers notre format
-      const projects = jsonData.map((row: any, index: number) => ({
-        id: index,
-        name: row['Business'] || '',
-        revenue: parseInt(String(row['Revenue (yearly)']).replace(/[^0-9]/g, '')) || 0,
-        problem: row['Problem / customer pain point'] || '',
-        solution: row['Solution'] || '',
-        developer: row['Developer'] || '',
-        ideation: row['Ideation'] || '',
-        mvp: row['MVP'] || '',
-        growth1: row['Growth'] || '',
-        growth2: row['Growth__1'] || '', // Excel duplique les colonnes avec __1
-        industry: row['Industry'] || '',
-        platform: row['Platform'] || '',
-        productType: row['Type of Product'] || '',
-        target: row['Target'] || '',
-        priceRange: row['Price Range'] || '',
-        businessModel: row['Business Model'] || '',
-        freePlan: row['Free Plan'] || '',
-        pricingDetails: row['Pricing Details'] || '',
-        traffic: row['Monthly Website Traffic'] || '',
-        revenuePerTraffic: row['Revenue Per Traffic'] || '',
-        stillSolo: row['Still solo?'] || '',
-        caseStudy: row['Full Case Study'] || ''
-      }));
+      const projects = jsonData.map((row: any, index: number) => {
+        // Gérer le revenue qui peut être un nombre ou une string
+        let revenue = 0;
+        if (typeof row['Revenue (yearly)'] === 'number') {
+          revenue = row['Revenue (yearly)'];
+        } else if (typeof row['Revenue (yearly)'] === 'string') {
+          revenue = parseInt(String(row['Revenue (yearly)']).replace(/[^0-9]/g, '')) || 0;
+        }
+
+        return {
+          id: index,
+          name: row['Business'] || '',
+          revenue: revenue,
+          problem: row['Problem / customer pain point'] || '',
+          solution: row['Solution'] || '',
+          developer: row['Developer'] || '',
+          ideation: row['Ideation'] || '',
+          mvp: row['MVP'] || '',
+          growth1: row['Growth'] || '',
+          growth2: row['Growth_1'] || '', // Excel utilise _1 pour les colonnes dupliquées
+          industry: row['Industry'] || '',
+          platform: row['Platform'] || '',
+          productType: row['Type of Product'] || '',
+          target: row['Target'] || '',
+          priceRange: row['Price Range'] || '',
+          businessModel: row['Business Model'] || '',
+          freePlan: row['Free Plan'] || '',
+          pricingDetails: row['Pricing Details'] || '',
+          traffic: row['Monthly Website Traffic'] || '',
+          revenuePerTraffic: row['Revenue Per Traffic'] || '',
+          stillSolo: row['Still solo?'] || '',
+          caseStudy: row['Full Case Study'] || ''
+        };
+      });
 
       setProjectCount(projects.length);
 
