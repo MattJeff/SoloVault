@@ -21,7 +21,7 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="text-zinc-300 hover:text-white transition">
+            <Link href="/dashboard" className="text-zinc-300 hover:text-white transition">
               Projets
             </Link>
             <Link href="#about" className="text-zinc-300 hover:text-white transition">
@@ -55,7 +55,7 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-zinc-800">
-            <Link href="/" className="block py-2 text-zinc-300 hover:text-white transition">
+            <Link href="/dashboard" className="block py-2 text-zinc-300 hover:text-white transition">
               Projets
             </Link>
             <Link href="#about" className="block py-2 text-zinc-300 hover:text-white transition">

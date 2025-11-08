@@ -1,0 +1,3 @@
+Placez votre image "exemple_landing.png" ici.
+Cette image sera affichée comme preview du dashboard sur la landing page.
+Dimensions recommandées: 1200x700px
