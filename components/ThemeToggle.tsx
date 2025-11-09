@@ -1,10 +1,40 @@
 'use client';
 
-import { useTheme } from '@/contexts/ThemeContext';
+import { useContext, useState, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
 export default function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // Charger le thème depuis localStorage
+    const savedTheme = localStorage.getItem('solovault_theme') as 'light' | 'dark';
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+
+    const root = document.documentElement;
+    if (newTheme === 'dark') {
+      root.classList.remove('light');
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    }
+
+    localStorage.setItem('solovault_theme', newTheme);
+  };
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <button
