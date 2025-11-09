@@ -3,49 +3,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { TrendingUp, Users, Zap } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800">
-        <div className="container mx-auto px-4 md:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S</span>
-              </div>
-              <span className="text-xl font-bold">SoloVault</span>
-            </Link>
-            
-            <div className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-zinc-400 hover:text-white transition">
-                Projets
-              </Link>
-              <Link href="/about" className="text-zinc-400 hover:text-white transition">
-                À propos
-              </Link>
-              <Link href="/contact" className="text-zinc-400 hover:text-white transition">
-                Contact
-              </Link>
-              <Link 
-                href="/dashboard"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-medium transition"
-              >
-                📥 Télécharger (19€)
-              </Link>
-            </div>
-            
-            {/* Mobile CTA */}
-            <Link 
-              href="/dashboard"
-              className="md:hidden bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition text-sm"
-            >
-              Dashboard
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="pt-24 md:pt-32 pb-12 md:pb-20 px-4 md:px-6">
