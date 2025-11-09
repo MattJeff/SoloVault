@@ -9,35 +9,30 @@ export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
-    // For development purposes, if no Stripe key is configured
-    if (!process.env.STRIPE_SECRET_KEY) {
-      console.warn('Stripe is not configured. Using dummy checkout URL.');
-      return NextResponse.json({ 
-        url: '/success?session_id=dummy_session_' + Date.now() 
-      });
+    // Vérifier que Stripe est configuré
+    if (!process.env.STRIPE_SECRET_KEY || !process.env.STRIPE_PRICE_ID) {
+      console.error('Stripe is not configured. Missing API keys or Price ID.');
+      return NextResponse.json(
+        { error: 'Configuration Stripe manquante' },
+        { status: 500 }
+      );
     }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: 'SoloVault - Base Complète',
-              description: '50+ projets solos détaillés + mises à jour mensuelles',
-            },
-            unit_amount: 1900, // 19.00 EUR en centimes
-          },
+          price: process.env.STRIPE_PRICE_ID, // Utiliser le price_id directement
           quantity: 1,
         },
       ],
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/dashboard`,
       customer_email: email,
       metadata: {
-        product: 'complete_database',
+        product: 'solovault_database',
+        customer_email: email,
         version: '1.0'
       }
     });
@@ -46,9 +41,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Stripe error:', error);
-    // For development, return a dummy URL
-    return NextResponse.json({ 
-      url: '/success?session_id=dummy_session_' + Date.now() 
-    });
+    return NextResponse.json(
+      { error: 'Erreur lors de la création de la session de paiement' },
+      { status: 500 }
+    );
   }
 }
