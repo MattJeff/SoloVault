@@ -4,6 +4,8 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Check, Download } from 'lucide-react';
 import Link from 'next/link';
+import * as XLSX from 'xlsx';
+import projectsData from '@/data/projects.json';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -12,6 +14,7 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [email, setEmail] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     // Récupérer l'email du localStorage
@@ -20,6 +23,59 @@ function SuccessContent() {
       setEmail(userEmail);
     }
   }, []);
+
+  const handleDownload = () => {
+    setIsDownloading(true);
+    try {
+      // Préparer les données pour Excel
+      const excelData = projectsData.map((project: any) => ({
+        'Nom': project.name,
+        'Industrie': project.industry,
+        'Problème': project.problem,
+        'Solution': project.solution,
+        'Revenue': project.revenue,
+        'Développeur': project.developer,
+        'Idéation': project.ideation,
+        'Temps MVP': project.mvp,
+        'Encore solo?': project.stillSolo,
+        'Croissance 1': project.growth1,
+        'Croissance 2': project.growth2,
+        'Plateforme': project.platform,
+        'Type de produit': project.productType,
+        'Cible': project.target,
+        'Prix': project.priceRange,
+        'Business Model': project.businessModel,
+        'Plan gratuit': project.freePlan,
+        'Détails pricing': project.pricingDetails,
+        'Traffic': project.traffic,
+        'Revenue/Traffic': project.revenuePerTraffic,
+        'Case Study': project.caseStudy
+      }));
+
+      // Créer le fichier Excel
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Projets SoloVault');
+
+      // Définir les largeurs de colonnes
+      const colWidths = [
+        { wch: 20 }, { wch: 15 }, { wch: 30 }, { wch: 30 }, { wch: 15 },
+        { wch: 20 }, { wch: 25 }, { wch: 12 }, { wch: 12 }, { wch: 20 },
+        { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 },
+        { wch: 20 }, { wch: 12 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 30 }
+      ];
+      ws['!cols'] = colWidths;
+
+      // Télécharger le fichier
+      const fileName = `solovault-complete-${projectsData.length}-projets-${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      console.error('Erreur lors du téléchargement:', error);
+      alert('Une erreur est survenue lors du téléchargement. Veuillez réessayer.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
@@ -63,13 +119,17 @@ function SuccessContent() {
           </div>
 
           {/* Download Button */}
-          <button className="w-full py-4 bg-orange-500 hover:bg-orange-600 rounded-lg font-bold text-lg transition flex items-center justify-center gap-3">
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="w-full py-4 bg-orange-500 hover:bg-orange-600 rounded-lg font-bold text-lg transition flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <Download className="w-6 h-6" />
-            Télécharger la base de données
+            {isDownloading ? 'Préparation...' : 'Télécharger la base de données'}
           </button>
 
           <p className="text-sm text-zinc-500 text-center mt-4">
-            Un email avec le lien de téléchargement a été envoyé à <strong>{email}</strong>
+            Cliquez sur le bouton ci-dessus pour télécharger la base complète ({projectsData.length} projets)
           </p>
         </div>
 
