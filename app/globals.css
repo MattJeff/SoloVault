@@ -41,48 +41,62 @@ h5 {
 
 /* Light mode overrides */
 .light {
-  background-color: #ffffff;
+  background-color: #fafafa;
   color: #111827;
 }
 
+/* Backgrounds */
 .light .bg-black {
-  background-color: #ffffff !important;
+  background-color: #fafafa !important;
 }
 
 .light .bg-zinc-900 {
-  background-color: #f9fafb !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb;
 }
 
 .light .bg-zinc-800 {
-  background-color: #f3f4f6 !important;
+  background-color: #f5f5f5 !important;
 }
 
 .light .bg-zinc-700 {
-  background-color: #e5e7eb !important;
+  background-color: #e8e8e8 !important;
 }
 
+/* Textes avec plus de contraste */
 .light .text-white {
-  color: #111827 !important;
+  color: #1f2937 !important;
 }
 
 .light .text-zinc-400 {
-  color: #6b7280 !important;
-}
-
-.light .text-zinc-500 {
-  color: #9ca3af !important;
-}
-
-.light .text-zinc-300 {
   color: #4b5563 !important;
 }
 
+.light .text-zinc-500 {
+  color: #6b7280 !important;
+}
+
+.light .text-zinc-300 {
+  color: #374151 !important;
+}
+
+/* Bordures */
 .light .border-zinc-800 {
-  border-color: #e5e7eb !important;
+  border-color: #d1d5db !important;
 }
 
 .light .border-zinc-700 {
-  border-color: #d1d5db !important;
+  border-color: #9ca3af !important;
+}
+
+/* Navbar en light mode */
+.light nav {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #e5e7eb !important;
+}
+
+.light nav .bg-black\/95 {
+  background-color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Garder l'orange en light mode pour les accents */
@@ -102,7 +116,21 @@ h5 {
   border-color: #ff5722 !important;
 }
 
+.light .hover\:border-orange-500:hover {
+  border-color: #ff5722 !important;
+}
+
 /* Couleurs spéciales pour le light mode */
 .light .text-green-500 {
   color: #10b981 !important;
+}
+
+/* Améliorer le contraste des cartes */
+.light .shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Backdrop blur en light mode */
+.light .backdrop-blur-md {
+  backdrop-filter: blur(12px);
 }

@@ -1,11 +1,37 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { Menu, X, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, Download, Sun, Moon } from 'lucide-react';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const savedTheme = localStorage.getItem('solovault_theme') as 'light' | 'dark';
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+
+    const root = document.documentElement;
+    if (newTheme === 'dark') {
+      root.classList.remove('light');
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
+    }
+
+    localStorage.setItem('solovault_theme', newTheme);
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-black/95 backdrop-blur-md border-b border-zinc-800">
@@ -30,7 +56,20 @@ export default function Navbar() {
             <Link href="/contact" className="text-zinc-300 hover:text-white transition">
               Contact
             </Link>
-            <button 
+            {mounted && (
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-orange-500 transition-all"
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-5 h-5 text-orange-500" />
+                ) : (
+                  <Moon className="w-5 h-5 text-orange-500" />
+                )}
+              </button>
+            )}
+            <button
               onClick={() => {
                 const event = new CustomEvent('openDownloadModal');
                 window.dispatchEvent(event);
@@ -63,7 +102,25 @@ export default function Navbar() {
             <Link href="/contact" className="block py-2 text-zinc-300 hover:text-white transition">
               Contact
             </Link>
-            <button 
+            {mounted && (
+              <button
+                onClick={toggleTheme}
+                className="mt-4 w-full px-4 py-2 bg-zinc-900 border border-zinc-800 hover:border-orange-500 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+              >
+                {theme === 'dark' ? (
+                  <>
+                    <Sun className="w-5 h-5 text-orange-500" />
+                    <span>Mode clair</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-5 h-5 text-orange-500" />
+                    <span>Mode sombre</span>
+                  </>
+                )}
+              </button>
+            )}
+            <button
               onClick={() => {
                 const event = new CustomEvent('openDownloadModal');
                 window.dispatchEvent(event);
