@@ -66,12 +66,16 @@ export default function DownloadModal({ allProjects, onClose }: DownloadModalPro
           })
         });
 
-        const { url } = await response.json();
-        window.location.href = url;
+        const data = await response.json();
+
+        if (!response.ok || !data.url) {
+          throw new Error(data.error || 'Erreur lors de la création de la session de paiement');
+        }
+
+        window.location.href = data.url;
       } catch (error) {
         console.error('Error:', error);
-        alert('Erreur lors de la redirection vers le paiement');
-      } finally {
+        alert(error instanceof Error ? error.message : 'Erreur lors de la redirection vers le paiement');
         setIsLoading(false);
       }
     } else {
