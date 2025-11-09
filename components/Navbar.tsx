@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X, Download, Sun, Moon } from 'lucide-react';
 
-export default function Navbar() {
+interface NavbarProps {
+  variant?: 'landing' | 'dashboard';
+}
+
+export default function Navbar({ variant = 'dashboard' }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [mounted, setMounted] = useState(false);
@@ -47,9 +51,6 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/dashboard" className="text-zinc-300 hover:text-white transition">
-              Projets
-            </Link>
             <Link href="/about" className="text-zinc-300 hover:text-white transition">
               À propos
             </Link>
@@ -69,16 +70,25 @@ export default function Navbar() {
                 )}
               </button>
             )}
-            <button
-              onClick={() => {
-                const event = new CustomEvent('openDownloadModal');
-                window.dispatchEvent(event);
-              }}
-              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Télécharger (19€)
-            </button>
+            {variant === 'landing' ? (
+              <Link
+                href="/dashboard"
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+              >
+                Accéder au dashboard
+              </Link>
+            ) : (
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('openDownloadModal');
+                  window.dispatchEvent(event);
+                }}
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Télécharger (19€)
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -93,9 +103,6 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-zinc-800">
-            <Link href="/dashboard" className="block py-2 text-zinc-300 hover:text-white transition">
-              Projets
-            </Link>
             <Link href="/about" className="block py-2 text-zinc-300 hover:text-white transition">
               À propos
             </Link>
@@ -120,16 +127,26 @@ export default function Navbar() {
                 )}
               </button>
             )}
-            <button
-              onClick={() => {
-                const event = new CustomEvent('openDownloadModal');
-                window.dispatchEvent(event);
-                setIsMenuOpen(false);
-              }}
-              className="mt-4 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
-            >
-              Télécharger (19€)
-            </button>
+            {variant === 'landing' ? (
+              <Link
+                href="/dashboard"
+                className="mt-4 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition block text-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Accéder au dashboard
+              </Link>
+            ) : (
+              <button
+                onClick={() => {
+                  const event = new CustomEvent('openDownloadModal');
+                  window.dispatchEvent(event);
+                  setIsMenuOpen(false);
+                }}
+                className="mt-4 w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+              >
+                Télécharger (19€)
+              </button>
+            )}
           </div>
         )}
       </div>

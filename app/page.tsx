@@ -43,7 +43,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <Navbar />
+      <Navbar variant="landing" />
 
       {/* Hero Section */}
       <section className="pt-24 md:pt-32 pb-12 md:pb-20 px-4 md:px-6">
