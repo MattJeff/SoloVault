@@ -4,8 +4,43 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { TrendingUp, Users, Zap } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import { useState, useEffect } from 'react';
 
 export default function LandingPage() {
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const savedTheme = localStorage.getItem('solovault_theme') as 'light' | 'dark';
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+
+    // Écouter les changements de thème
+    const handleStorageChange = () => {
+      const newTheme = localStorage.getItem('solovault_theme') as 'light' | 'dark';
+      if (newTheme) {
+        setTheme(newTheme);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Vérifier périodiquement le thème (pour détecter les changements dans la même page)
+    const interval = setInterval(() => {
+      const currentTheme = localStorage.getItem('solovault_theme') as 'light' | 'dark';
+      if (currentTheme && currentTheme !== theme) {
+        setTheme(currentTheme);
+      }
+    }, 100);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, [theme]);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
@@ -68,14 +103,16 @@ export default function LandingPage() {
           {/* Preview Image */}
           <div className="relative rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
-            <Image 
-              src="/exemple_landing.png" 
-              alt="Dashboard Preview - SoloVault" 
-              width={1200}
-              height={700}
-              className="w-full h-auto"
-              priority
-            />
+            {mounted && (
+              <Image
+                src={theme === 'dark' ? "/exemple_landing.png" : "/lightmode_image.png"}
+                alt="Dashboard Preview - SoloVault"
+                width={1200}
+                height={700}
+                className="w-full h-auto"
+                priority
+              />
+            )}
             
             {/* Overlay CTA */}
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-20">
