@@ -45,26 +45,64 @@ h5 {
   color: #111827;
 }
 
-.light .bg-black { 
-  background-color: #ffffff;
+.light .bg-black {
+  background-color: #ffffff !important;
 }
 
-.light .bg-zinc-900 { 
-  background-color: #f9fafb;
+.light .bg-zinc-900 {
+  background-color: #f9fafb !important;
 }
 
-.light .bg-zinc-800 { 
-  background-color: #f3f4f6;
+.light .bg-zinc-800 {
+  background-color: #f3f4f6 !important;
 }
 
-.light .text-white { 
-  color: #111827;
+.light .bg-zinc-700 {
+  background-color: #e5e7eb !important;
 }
 
-.light .text-zinc-400 { 
-  color: #6b7280;
+.light .text-white {
+  color: #111827 !important;
 }
 
-.light .border-zinc-800 { 
-  border-color: #e5e7eb;
+.light .text-zinc-400 {
+  color: #6b7280 !important;
+}
+
+.light .text-zinc-500 {
+  color: #9ca3af !important;
+}
+
+.light .text-zinc-300 {
+  color: #4b5563 !important;
+}
+
+.light .border-zinc-800 {
+  border-color: #e5e7eb !important;
+}
+
+.light .border-zinc-700 {
+  border-color: #d1d5db !important;
+}
+
+/* Garder l'orange en light mode pour les accents */
+.light .bg-orange-500 {
+  background-color: #ff5722 !important;
+}
+
+.light .hover\:bg-orange-600:hover {
+  background-color: #f4511e !important;
+}
+
+.light .text-orange-500 {
+  color: #ff5722 !important;
+}
+
+.light .border-orange-500 {
+  border-color: #ff5722 !important;
+}
+
+/* Couleurs spéciales pour le light mode */
+.light .text-green-500 {
+  color: #10b981 !important;
 }
