@@ -2,13 +2,17 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { TrendingUp, Users, Zap } from 'lucide-react';
+import { TrendingUp, Users, Zap, Sparkles } from 'lucide-react';
 import Navbar from '@/components/Navbar';
+import SaaSQuiz from '@/components/SaaSQuiz';
+import ExitIntentPopup from '@/components/ExitIntentPopup';
+import SocialProofNotifications from '@/components/SocialProofNotifications';
 import { useState, useEffect } from 'react';
 
 export default function LandingPage() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [mounted, setMounted] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -92,9 +96,25 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* CTA Badge */}
+          {/* Quiz CTA */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 text-sm text-zinc-400 mb-8">
+            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-2xl p-8 mb-8">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Sparkles className="w-6 h-6 text-purple-500" />
+                <h3 className="text-2xl font-bold">Quel SaaS est fait pour TOI ?</h3>
+              </div>
+              <p className="text-zinc-400 mb-6">
+                Réponds à 5 questions et découvre le type de SaaS qui correspond parfaitement à ton profil
+              </p>
+              <button
+                onClick={() => setShowQuiz(true)}
+                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-xl transition shadow-lg shadow-purple-500/20"
+              >
+                🎯 Faire le quiz (2 min)
+              </button>
+            </div>
+
+            <div className="inline-flex items-center gap-2 text-sm text-zinc-400">
               <span className="text-orange-500">🔥</span>
               <span>Accès gratuit aux 10 premiers projets • Base complète à 19€</span>
             </div>
@@ -194,22 +214,27 @@ export default function LandingPage() {
               </div>
               <span className="text-xl font-bold">SoloVault</span>
             </div>
-            
+
             <div className="text-zinc-400 text-sm">
               © 2024 SoloVault. Tous droits réservés.
             </div>
-            
+
             <div className="flex gap-6">
-              <Link href="/dashboard" className="text-zinc-400 hover:text-white transition text-sm">
+              <Link href="/contact" className="text-zinc-400 hover:text-white transition text-sm">
                 Contact
               </Link>
-              <Link href="/dashboard" className="text-zinc-400 hover:text-white transition text-sm">
-                Mentions légales
+              <Link href="/about" className="text-zinc-400 hover:text-white transition text-sm">
+                À propos
               </Link>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Growth Marketing Components */}
+      {showQuiz && <SaaSQuiz onClose={() => setShowQuiz(false)} />}
+      <ExitIntentPopup />
+      <SocialProofNotifications />
     </div>
   );
 }
