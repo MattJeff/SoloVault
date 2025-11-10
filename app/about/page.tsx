@@ -67,6 +67,47 @@ export default function AboutPage() {
             </div>
           </div>
 
+          {/* Founder */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-center mb-12">Le Fondateur</h2>
+
+            <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/30 rounded-2xl p-8 md:p-12">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="flex-1">
+                  <div className="inline-flex items-center gap-2 bg-orange-500/20 border border-orange-500/30 rounded-full px-4 py-2 mb-4">
+                    <Users className="w-4 h-4 text-orange-500" />
+                    <span className="text-sm text-orange-500 font-medium">Founder & CEO</span>
+                  </div>
+
+                  <h3 className="text-2xl font-bold mb-4">Mathis Higuinen</h3>
+
+                  <p className="text-zinc-300 leading-relaxed mb-6">
+                    Développeur full-stack passionné et entrepreneur, j'ai créé SoloVault pour partager
+                    les success stories des solopreneurs et aider la nouvelle génération d'entrepreneurs
+                    à lancer leurs projets tech.
+                  </p>
+
+                  <p className="text-zinc-300 leading-relaxed mb-6">
+                    Spécialisé dans le développement de SaaS avec les technologies modernes (Next.js, React, TypeScript),
+                    j'accompagne les entrepreneurs de l'idée au lancement en production.
+                  </p>
+
+                  <a
+                    href="https://portfolio-n75t12aup-mathis-projects-5e16dcfb.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+                  >
+                    <span>Voir mon portfolio</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Services */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-center mb-12">Ce que nous faisons</h2>
