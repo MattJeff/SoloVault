@@ -5,6 +5,8 @@ import emailjs from '@emailjs/browser';
 import { X, Lock, Check } from 'lucide-react';
 
 export default function EmailGate() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +31,11 @@ export default function EmailGate() {
     setError('');
 
     // Validation
+    if (!firstName || !lastName) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
+
     if (!email) {
       setError('Veuillez entrer votre email');
       return;
@@ -42,11 +49,25 @@ export default function EmailGate() {
     setIsLoading(true);
 
     try {
+      // Sauvegarder dans la base de données
+      await fetch('/api/save-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          source: 'Email Gate',
+          page: typeof window !== 'undefined' ? window.location.pathname : '/'
+        })
+      });
+
       // Envoyer via EmailJS
       await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
         {
+          user_name: `${firstName} ${lastName}`,
           user_email: email,
           capture_date: new Date().toLocaleString('fr-FR'),
           source: 'Email Gate',
@@ -56,6 +77,8 @@ export default function EmailGate() {
       );
 
       // Sauvegarder localement
+      localStorage.setItem('solovault_firstName', firstName);
+      localStorage.setItem('solovault_lastName', lastName);
       localStorage.setItem('solovault_email', email);
       localStorage.setItem('solovault_email_submitted', 'true');
       localStorage.setItem('solovault_email_date', new Date().toISOString());
@@ -110,6 +133,25 @@ export default function EmailGate() {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Prénom"
+              className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition"
+              disabled={isLoading}
+              autoFocus
+            />
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Nom"
+              className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition"
+              disabled={isLoading}
+            />
+          </div>
           <input
             type="email"
             value={email}
@@ -117,7 +159,6 @@ export default function EmailGate() {
             placeholder="votre@email.com"
             className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 transition mb-4"
             disabled={isLoading}
-            autoFocus
           />
           
           {error && (

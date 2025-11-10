@@ -4,6 +4,16 @@ import { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { Upload, Lock, Check, AlertCircle, Download, History } from 'lucide-react';
 
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  source: string;
+  page: string;
+  createdAt: string;
+}
+
 export default function AdminPage() {
   const [code, setCode] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,6 +21,8 @@ export default function AdminPage() {
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [projectCount, setProjectCount] = useState(0);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
   const handleAuth = () => {
     if (code === process.env.NEXT_PUBLIC_ADMIN_CODE || code === '1234') {
@@ -107,6 +119,39 @@ export default function AdminPage() {
     }
   };
 
+  // Load users
+  const loadUsers = async () => {
+    setIsLoadingUsers(true);
+    try {
+      const response = await fetch('/api/admin/get-users');
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  // Download users as Excel
+  const downloadUsers = () => {
+    const excelData = users.map(user => ({
+      'Prénom': user.firstName,
+      'Nom': user.lastName,
+      'Email': user.email,
+      'Source': user.source,
+      'Page': user.page,
+      'Date': new Date(user.createdAt).toLocaleString('fr-FR')
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Utilisateurs');
+
+    const fileName = `solovault-users-${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
   // Check if already authenticated
   useEffect(() => {
     const isAuth = localStorage.getItem('admin_authenticated');
@@ -114,6 +159,13 @@ export default function AdminPage() {
       setIsAuthenticated(true);
     }
   }, []);
+
+  // Load users when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadUsers();
+    }
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (
@@ -165,8 +217,8 @@ export default function AdminPage() {
             <div className="text-3xl font-bold">{projectCount || 50}</div>
           </div>
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <div className="text-zinc-400 text-sm mb-2">Dernière mise à jour</div>
-            <div className="text-lg font-semibold">Aujourd'hui</div>
+            <div className="text-zinc-400 text-sm mb-2">Utilisateurs inscrits</div>
+            <div className="text-3xl font-bold">{users.length}</div>
           </div>
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
             <div className="text-zinc-400 text-sm mb-2">Format</div>
@@ -256,6 +308,63 @@ export default function AdminPage() {
             <div className="mt-6 flex items-center justify-center gap-3">
               <div className="animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent" />
               <span className="text-zinc-400">Traitement en cours...</span>
+            </div>
+          )}
+        </div>
+
+        {/* Users List */}
+        <div className="mt-8 bg-zinc-900 border border-zinc-800 rounded-xl p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold">👥 Liste des utilisateurs</h2>
+              <p className="text-zinc-400 text-sm mt-1">
+                {users.length} utilisateur{users.length > 1 ? 's' : ''} inscrit{users.length > 1 ? 's' : ''}
+              </p>
+            </div>
+            <button
+              onClick={downloadUsers}
+              disabled={users.length === 0}
+              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="w-4 h-4" />
+              Télécharger Excel
+            </button>
+          </div>
+
+          {isLoadingUsers ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-orange-500 border-t-transparent" />
+            </div>
+          ) : users.length === 0 ? (
+            <div className="text-center py-12 text-zinc-500">
+              Aucun utilisateur pour le moment
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-zinc-800">
+                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Prénom</th>
+                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Nom</th>
+                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Email</th>
+                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Source</th>
+                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition">
+                      <td className="py-3 px-4">{user.firstName}</td>
+                      <td className="py-3 px-4">{user.lastName}</td>
+                      <td className="py-3 px-4 text-orange-500">{user.email}</td>
+                      <td className="py-3 px-4 text-sm text-zinc-400">{user.source}</td>
+                      <td className="py-3 px-4 text-sm text-zinc-400">
+                        {new Date(user.createdAt).toLocaleDateString('fr-FR')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
