@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Menu, X, Download, Sun, Moon } from 'lucide-react';
+import GamificationBadge from './GamificationBadge';
 
 interface NavbarProps {
   variant?: 'landing' | 'dashboard';
@@ -57,6 +58,7 @@ export default function Navbar({ variant = 'dashboard' }: NavbarProps) {
             <Link href="/contact" className="text-zinc-300 hover:text-white transition">
               Contact
             </Link>
+            {mounted && <GamificationBadge />}
             {mounted && (
               <button
                 onClick={toggleTheme}
@@ -109,6 +111,11 @@ export default function Navbar({ variant = 'dashboard' }: NavbarProps) {
             <Link href="/contact" className="block py-2 text-zinc-300 hover:text-white transition">
               Contact
             </Link>
+            {mounted && (
+              <div className="mt-4 flex justify-center">
+                <GamificationBadge />
+              </div>
+            )}
             {mounted && (
               <button
                 onClick={toggleTheme}

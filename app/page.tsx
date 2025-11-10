@@ -2,17 +2,23 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { TrendingUp, Users, Zap, Sparkles } from 'lucide-react';
+import { TrendingUp, Users, Zap, Sparkles, Calculator, FileText, Trophy } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import SaaSQuiz from '@/components/SaaSQuiz';
 import ExitIntentPopup from '@/components/ExitIntentPopup';
 import SocialProofNotifications from '@/components/SocialProofNotifications';
+import RevenueCalculator from '@/components/RevenueCalculator';
+import ContentUpgrades from '@/components/ContentUpgrades';
+import Leaderboard from '@/components/Leaderboard';
 import { useState, useEffect } from 'react';
 
 export default function LandingPage() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [mounted, setMounted] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [showContentUpgrades, setShowContentUpgrades] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -155,7 +161,7 @@ export default function LandingPage() {
           <h2 className="text-4xl font-bold text-center mb-16">
             Tout ce dont vous avez besoin pour réussir
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-black border border-zinc-800 rounded-2xl p-8">
               <div className="text-4xl mb-4">📊</div>
@@ -164,7 +170,7 @@ export default function LandingPage() {
                 Revenue, MVP speed, stack technique, stratégies de croissance et bien plus pour chaque projet.
               </p>
             </div>
-            
+
             <div className="bg-black border border-zinc-800 rounded-2xl p-8">
               <div className="text-4xl mb-4">🔍</div>
               <h3 className="text-xl font-bold mb-3">Filtres avancés</h3>
@@ -172,13 +178,90 @@ export default function LandingPage() {
                 Trouvez exactement ce que vous cherchez : par revenue, industrie, type de produit, et plus.
               </p>
             </div>
-            
+
             <div className="bg-black border border-zinc-800 rounded-2xl p-8">
               <div className="text-4xl mb-4">💡</div>
               <h3 className="text-xl font-bold mb-3">Inspiration garantie</h3>
               <p className="text-zinc-400">
                 Découvrez comment des solopreneurs ont transformé une idée en business rentable.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tools & Resources Section */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <h2 className="text-4xl font-bold text-center mb-4">
+            Outils & Ressources Gratuits
+          </h2>
+          <p className="text-zinc-400 text-center mb-16 max-w-2xl mx-auto">
+            Accède à des outils exclusifs pour valider ton idée et planifier ton lancement
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Revenue Calculator */}
+            <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-2 border-blue-500/30 rounded-2xl p-8 hover:border-blue-500 transition cursor-pointer"
+              onClick={() => setShowCalculator(true)}>
+              <div className="w-16 h-16 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6">
+                <Calculator className="w-8 h-8 text-blue-500" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Calculateur Revenue</h3>
+              <p className="text-zinc-400 mb-6">
+                Projette ton MRR et ARR en fonction de ton trafic, conversion et pricing
+              </p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowCalculator(true);
+                }}
+                className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition"
+              >
+                Calculer mon revenue
+              </button>
+            </div>
+
+            {/* Content Upgrades */}
+            <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-2 border-green-500/30 rounded-2xl p-8 hover:border-green-500 transition cursor-pointer"
+              onClick={() => setShowContentUpgrades(true)}>
+              <div className="w-16 h-16 bg-green-500/20 rounded-xl flex items-center justify-center mb-6">
+                <FileText className="w-8 h-8 text-green-500" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Templates Gratuits</h3>
+              <p className="text-zinc-400 mb-6">
+                Checklist MVP 30 jours + Template Pitch Deck pour investors
+              </p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowContentUpgrades(true);
+                }}
+                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition"
+              >
+                Télécharger les templates
+              </button>
+            </div>
+
+            {/* Leaderboard */}
+            <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-2 border-orange-500/30 rounded-2xl p-8 hover:border-orange-500 transition cursor-pointer"
+              onClick={() => setShowLeaderboard(true)}>
+              <div className="w-16 h-16 bg-orange-500/20 rounded-xl flex items-center justify-center mb-6">
+                <Trophy className="w-8 h-8 text-orange-500" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Leaderboard</h3>
+              <p className="text-zinc-400 mb-6">
+                Découvre le classement des solopreneurs les plus actifs sur SoloVault
+              </p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowLeaderboard(true);
+                }}
+                className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+              >
+                Voir le classement
+              </button>
             </div>
           </div>
         </div>
@@ -235,6 +318,11 @@ export default function LandingPage() {
       {showQuiz && <SaaSQuiz onClose={() => setShowQuiz(false)} />}
       <ExitIntentPopup />
       <SocialProofNotifications />
+
+      {/* Gamification & Tools */}
+      {showCalculator && <RevenueCalculator onClose={() => setShowCalculator(false)} />}
+      {showContentUpgrades && <ContentUpgrades onClose={() => setShowContentUpgrades(false)} />}
+      {showLeaderboard && <Leaderboard onClose={() => setShowLeaderboard(false)} />}
     </div>
   );
 }
