@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { Upload, Lock, Check, AlertCircle, Download, History, Users, TrendingUp, Award, MessageSquare, UserPlus, Activity, BarChart3, PieChart } from 'lucide-react';
+import { Upload, Lock, Check, AlertCircle, Download, History, Users, TrendingUp, Award, MessageSquare, UserPlus, Activity, BarChart3, PieChart, BookOpen, Edit, Trash2, Eye, Plus } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const BlogEditor = dynamic(() => import('@/components/BlogEditor'), { ssr: false });
 import { LineChart, Line, BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface User {
@@ -56,7 +59,23 @@ export default function AdminPage() {
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'quiz' | 'referrals' | 'upload'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'quiz' | 'referrals' | 'blog' | 'upload'>('overview');
+  
+  // Blog states
+  const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [isLoadingBlog, setIsLoadingBlog] = useState(false);
+  const [showBlogEditor, setShowBlogEditor] = useState(false);
+  const [editingPost, setEditingPost] = useState<any>(null);
+  const [blogForm, setBlogForm] = useState({
+    title: '',
+    slug: '',
+    excerpt: '',
+    content: '',
+    coverImage: '',
+    category: '',
+    tags: [] as string[],
+    status: 'draft'
+  });
 
   const handleAuth = () => {
     if (code === process.env.NEXT_PUBLIC_ADMIN_CODE || code === '1234') {
@@ -202,6 +221,131 @@ export default function AdminPage() {
     XLSX.writeFile(wb, fileName);
   };
 
+  // Blog functions
+  const loadBlogPosts = async () => {
+    setIsLoadingBlog(true);
+    try {
+      const response = await fetch('/api/blog?status=all');
+      const data = await response.json();
+      setBlogPosts(data);
+    } catch (error) {
+      console.error('Error loading blog posts:', error);
+    } finally {
+      setIsLoadingBlog(false);
+    }
+  };
+
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
+  const handleBlogSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const currentUser = localStorage.getItem('solovault_email') || 'admin@solovault.com';
+      const userName = localStorage.getItem('solovault_firstName') || 'Admin';
+
+      const postData = {
+        ...blogForm,
+        slug: blogForm.slug || generateSlug(blogForm.title),
+        authorEmail: currentUser,
+        authorName: userName,
+      };
+
+      let response;
+      if (editingPost) {
+        response = await fetch(`/api/blog/${editingPost.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(postData)
+        });
+      } else {
+        response = await fetch('/api/blog', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(postData)
+        });
+      }
+
+      if (response.ok) {
+        alert(editingPost ? 'Article mis à jour !' : 'Article créé !');
+        setShowBlogEditor(false);
+        setEditingPost(null);
+        setBlogForm({
+          title: '',
+          slug: '',
+          excerpt: '',
+          content: '',
+          coverImage: '',
+          category: '',
+          tags: [],
+          status: 'draft'
+        });
+        loadBlogPosts();
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Erreur lors de la sauvegarde');
+      }
+    } catch (error) {
+      console.error('Error saving blog post:', error);
+      alert('Erreur lors de la sauvegarde');
+    }
+  };
+
+  const handleEditPost = (post: any) => {
+    setEditingPost(post);
+    setBlogForm({
+      title: post.title,
+      slug: post.slug,
+      excerpt: post.excerpt || '',
+      content: post.content,
+      coverImage: post.cover_image || '',
+      category: post.category || '',
+      tags: post.tags || [],
+      status: post.status
+    });
+    setShowBlogEditor(true);
+  };
+
+  const handleDeletePost = async (id: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) return;
+
+    try {
+      const response = await fetch(`/api/blog/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        alert('Article supprimé !');
+        loadBlogPosts();
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Erreur lors de la suppression');
+    }
+  };
+
+  const handleNewPost = () => {
+    setEditingPost(null);
+    setBlogForm({
+      title: '',
+      slug: '',
+      excerpt: '',
+      content: '',
+      coverImage: '',
+      category: '',
+      tags: [],
+      status: 'draft'
+    });
+    setShowBlogEditor(true);
+  };
+
   // Check if already authenticated
   useEffect(() => {
     const isAuth = localStorage.getItem('admin_authenticated');
@@ -215,6 +359,7 @@ export default function AdminPage() {
     if (isAuthenticated) {
       loadUsers();
       loadStats();
+      loadBlogPosts();
     }
   }, [isAuthenticated]);
 
@@ -281,6 +426,7 @@ export default function AdminPage() {
             { id: 'users', label: '👥 Utilisateurs', icon: Users },
             { id: 'quiz', label: '🎯 Quiz', icon: MessageSquare },
             { id: 'referrals', label: '🎁 Parrainages', icon: UserPlus },
+            { id: 'blog', label: '📝 Blog', icon: BookOpen },
             { id: 'upload', label: '📤 Upload', icon: Upload }
           ].map((tab) => (
             <button
@@ -564,6 +710,259 @@ export default function AdminPage() {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* BLOG TAB */}
+        {activeTab === 'blog' && !showBlogEditor && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">📝 Gestion du Blog</h2>
+                <p className="text-zinc-400 text-sm mt-1">
+                  {blogPosts.length} article{blogPosts.length > 1 ? 's' : ''} au total
+                </p>
+              </div>
+              <button
+                onClick={handleNewPost}
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Nouvel article
+              </button>
+            </div>
+
+            {isLoadingBlog ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-2 border-orange-500 border-t-transparent" />
+              </div>
+            ) : blogPosts.length === 0 ? (
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-12 text-center">
+                <BookOpen className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold mb-2">Aucun article</h3>
+                <p className="text-zinc-400 mb-6">Commencez par créer votre premier article de blog</p>
+                <button
+                  onClick={handleNewPost}
+                  className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+                >
+                  Créer un article
+                </button>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {blogPosts.map((post) => (
+                  <div key={post.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition">
+                    <div className="flex items-start gap-4">
+                      {post.cover_image && (
+                        <img
+                          src={post.cover_image}
+                          alt={post.title}
+                          className="w-32 h-32 object-cover rounded-lg flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-4 mb-2">
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold mb-1">{post.title}</h3>
+                            <p className="text-sm text-zinc-400 mb-2">/{post.slug}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              post.status === 'published' 
+                                ? 'bg-green-500/10 border border-green-500/30 text-green-500'
+                                : post.status === 'draft'
+                                ? 'bg-yellow-500/10 border border-yellow-500/30 text-yellow-500'
+                                : 'bg-zinc-700 text-zinc-400'
+                            }`}>
+                              {post.status === 'published' ? '✓ Publié' : post.status === 'draft' ? '📝 Brouillon' : 'Archivé'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {post.excerpt && (
+                          <p className="text-zinc-400 text-sm mb-3 line-clamp-2">{post.excerpt}</p>
+                        )}
+                        
+                        <div className="flex items-center gap-4 text-xs text-zinc-500 mb-3">
+                          {post.category && (
+                            <span className="px-2 py-1 bg-zinc-800 rounded">{post.category}</span>
+                          )}
+                          {post.reading_time && (
+                            <span>⏱️ {post.reading_time} min</span>
+                          )}
+                          {post.views > 0 && (
+                            <span>👁️ {post.views} vues</span>
+                          )}
+                          <span>
+                            {post.published_at 
+                              ? new Date(post.published_at).toLocaleDateString('fr-FR')
+                              : new Date(post.created_at).toLocaleDateString('fr-FR')}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleEditPost(post)}
+                            className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded flex items-center gap-1.5"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                            Modifier
+                          </button>
+                          <button
+                            onClick={() => window.open(`/astuces/${post.slug}`, '_blank')}
+                            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white text-sm font-semibold rounded flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Voir
+                          </button>
+                          <button
+                            onClick={() => handleDeletePost(post.id)}
+                            className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-semibold rounded flex items-center gap-1.5"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* BLOG EDITOR */}
+        {activeTab === 'blog' && showBlogEditor && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">
+                {editingPost ? '✏️ Modifier l\'article' : '➕ Nouvel article'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowBlogEditor(false);
+                  setEditingPost(null);
+                }}
+                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg"
+              >
+                ← Retour
+              </button>
+            </div>
+
+            <form onSubmit={handleBlogSubmit} className="space-y-6">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Titre *</label>
+                    <input
+                      type="text"
+                      value={blogForm.title}
+                      onChange={(e) => {
+                        setBlogForm({ ...blogForm, title: e.target.value });
+                        if (!editingPost) {
+                          setBlogForm({ ...blogForm, title: e.target.value, slug: generateSlug(e.target.value) });
+                        }
+                      }}
+                      required
+                      className="w-full px-4 py-2 bg-black border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      placeholder="Titre de l'article"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Slug (URL) *</label>
+                    <input
+                      type="text"
+                      value={blogForm.slug}
+                      onChange={(e) => setBlogForm({ ...blogForm, slug: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 bg-black border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                      placeholder="mon-article"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Extrait (meta description)</label>
+                  <textarea
+                    value={blogForm.excerpt}
+                    onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
+                    rows={2}
+                    className="w-full px-4 py-2 bg-black border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                    placeholder="Court résumé de l'article (160 caractères max)"
+                    maxLength={160}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Image de couverture (URL)</label>
+                  <input
+                    type="url"
+                    value={blogForm.coverImage}
+                    onChange={(e) => setBlogForm({ ...blogForm, coverImage: e.target.value })}
+                    className="w-full px-4 py-2 bg-black border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Catégorie</label>
+                    <select
+                      value={blogForm.category}
+                      onChange={(e) => setBlogForm({ ...blogForm, category: e.target.value })}
+                      className="w-full px-4 py-2 bg-black border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                    >
+                      <option value="">Sélectionner...</option>
+                      <option value="Tutoriel">Tutoriel</option>
+                      <option value="Astuce">Astuce</option>
+                      <option value="Guide">Guide</option>
+                      <option value="Inspiration">Inspiration</option>
+                      <option value="Analyse">Analyse</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Statut</label>
+                    <select
+                      value={blogForm.status}
+                      onChange={(e) => setBlogForm({ ...blogForm, status: e.target.value })}
+                      className="w-full px-4 py-2 bg-black border border-zinc-700 rounded-lg focus:outline-none focus:border-orange-500"
+                    >
+                      <option value="draft">Brouillon</option>
+                      <option value="published">Publié</option>
+                      <option value="archived">Archivé</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <label className="block text-sm font-semibold mb-4">Contenu de l'article *</label>
+                <BlogEditor
+                  content={blogForm.content}
+                  onChange={(content) => setBlogForm({ ...blogForm, content })}
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+                >
+                  {editingPost ? 'Mettre à jour' : 'Créer l\'article'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBlogEditor(false);
+                    setEditingPost(null);
+                  }}
+                  className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-lg transition"
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
           </div>
         )}
 

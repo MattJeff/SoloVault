@@ -11,6 +11,13 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@supabase/supabase-js": "^2.81.0",
+    "@tiptap/extension-image": "^3.10.5",
+    "@tiptap/extension-link": "^3.10.5",
+    "@tiptap/extension-text-align": "^3.10.5",
+    "@tiptap/extension-underline": "^3.10.5",
+    "@tiptap/extension-youtube": "^3.10.5",
+    "@tiptap/react": "^3.10.5",
+    "@tiptap/starter-kit": "^3.10.5",
     "lucide-react": "^0.553.0",
     "next": "16.0.1",
     "react": "19.2.0",

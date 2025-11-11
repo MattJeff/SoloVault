@@ -58,6 +58,9 @@ export default function Navbar({ variant = 'dashboard' }: NavbarProps) {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
+            <Link href="/astuces" className="text-zinc-300 hover:text-white transition">
+              Astuces
+            </Link>
             <Link href="/about" className="text-zinc-300 hover:text-white transition">
               À propos
             </Link>
@@ -131,10 +134,13 @@ export default function Navbar({ variant = 'dashboard' }: NavbarProps) {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-zinc-800">
-            <Link href="/about" className="block py-2 text-zinc-300 hover:text-white transition">
+            <Link href="/astuces" className="block py-2 text-zinc-300 hover:text-white transition" onClick={() => setIsMenuOpen(false)}>
+              Astuces
+            </Link>
+            <Link href="/about" className="block py-2 text-zinc-300 hover:text-white transition" onClick={() => setIsMenuOpen(false)}>
               À propos
             </Link>
-            <Link href="/contact" className="block py-2 text-zinc-300 hover:text-white transition">
+            <Link href="/contact" className="block py-2 text-zinc-300 hover:text-white transition" onClick={() => setIsMenuOpen(false)}>
               Contact
             </Link>
             {mounted && (
