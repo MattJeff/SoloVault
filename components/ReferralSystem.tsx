@@ -41,21 +41,32 @@ export default function ReferralSystem({ onClose }: ReferralSystemProps) {
       }
       const data = await response.json();
       setStats({
-        referralCode: data.referralCode || '',
+        referralCode: data.referralCode || generateClientReferralCode(userEmail),
         referralsCount: data.referralsCount || 0,
         referredUsers: data.referredUsers || [],
         callEarned: data.callEarned || false
       });
     } catch (error) {
       console.error('Error loading referral stats:', error);
-      // Set default values on error
+      // Fallback to client-side generation if API fails (Vercel serverless limitation)
+      const clientCode = generateClientReferralCode(userEmail);
       setStats({
-        referralCode: '',
+        referralCode: clientCode,
         referralsCount: 0,
         referredUsers: [],
         callEarned: false
       });
     }
+  };
+
+  const generateClientReferralCode = (email: string): string => {
+    // Client-side fallback code generation
+    const hash = email.split('').reduce((acc, char) => {
+      return ((acc << 5) - acc) + char.charCodeAt(0);
+    }, 0);
+    const base = Math.abs(hash).toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `${base.substring(0, 4)}${random}`;
   };
 
   const getReferralLink = () => {
