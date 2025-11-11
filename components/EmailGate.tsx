@@ -96,7 +96,8 @@ export default function EmailGate() {
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
         {
-          to_name: 'Mathis',
+          subject: `🎉 Nouvelle inscription SoloVault - ${firstName} ${lastName}`,
+          message: `Un nouveau visiteur s'est inscrit sur SoloVault ! 🎉`,
           firstName: firstName || 'Utilisateur',
           lastName: lastName || 'Anonyme',
           email: email,
@@ -108,7 +109,9 @@ export default function EmailGate() {
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
-          })
+          }),
+          reply_to: email,
+          admin_link: 'true'
         },
         process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
       );

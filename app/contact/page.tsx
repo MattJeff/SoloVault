@@ -23,12 +23,21 @@ export default function ContactPage() {
     try {
       await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-        process.env.NEXT_PUBLIC_EMAILJS_QUOTE_TEMPLATE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!, // Template universel
         {
-          from_name: formData.name,
-          from_email: formData.email,
+          subject: `💬 Nouveau message de ${formData.name}`,
           message: formData.message,
-          to_email: process.env.NEXT_PUBLIC_ADMIN_EMAIL
+          email: formData.email,
+          firstName: formData.name.split(' ')[0] || formData.name,
+          lastName: formData.name.split(' ').slice(1).join(' ') || '',
+          reply_to: formData.email,
+          timestamp: new Date().toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
         },
         process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
       );

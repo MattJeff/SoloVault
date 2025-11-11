@@ -1,27 +1,31 @@
 # 📧 Configuration EmailJS - SoloVault
 
-## 🎯 Templates EmailJS configurés
+## 🎯 Template EmailJS UNIVERSEL (Plan Gratuit)
 
-### 1. **Email Gate - Inscription/Connexion** (`template_otowczx`)
-**Utilisation** : Notification quand un utilisateur s'inscrit ou se connecte via l'Email Gate
+### **Template Universel** (`template_otowczx`)
+**Utilisation** : UN SEUL template pour tous les cas (inscription, connexion, message contact)
 
 **Variables du template** :
 ```
-{{to_name}} - Ton prénom (Mathis)
-{{firstName}} - Prénom de l'utilisateur
-{{lastName}} - Nom de l'utilisateur
-{{email}} - Email de l'utilisateur
-{{source}} - Source (Email Gate - Inscription / Email Gate - Connexion)
-{{page}} - Page où l'utilisateur s'est inscrit
-{{timestamp}} - Date et heure (format: DD/MM/YYYY HH:MM)
+{{subject}} - Sujet de l'email (dynamique)
+{{message}} - Message principal (dynamique)
+{{firstName}} - Prénom (optionnel)
+{{lastName}} - Nom (optionnel)
+{{email}} - Email
+{{source}} - Source (optionnel)
+{{page}} - Page (optionnel)
+{{timestamp}} - Date et heure
+{{reply_to}} - Email de réponse
+{{admin_link}} - Lien dashboard (optionnel)
 ```
 
-**Template suggéré** :
+**Template à copier dans EmailJS Dashboard** :
 ```
-Bonjour {{to_name}},
+Bonjour Mathis,
 
-Un nouveau visiteur s'est inscrit sur SoloVault ! 🎉
+{{message}}
 
+{{#firstName}}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 👤 INFORMATIONS UTILISATEUR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -29,7 +33,9 @@ Un nouveau visiteur s'est inscrit sur SoloVault ! 🎉
 Prénom : {{firstName}}
 Nom : {{lastName}}
 Email : {{email}}
+{{/firstName}}
 
+{{#source}}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📍 PROVENANCE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -37,15 +43,26 @@ Email : {{email}}
 Source : {{source}}
 Page : {{page}}
 Date : {{timestamp}}
+{{/source}}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Connecte-toi à ton dashboard admin pour voir plus de détails :
-https://solovault.vercel.app/admin
+{{#reply_to}}
+Répondre à : {{reply_to}}
+{{/reply_to}}
+
+{{#admin_link}}
+Dashboard admin : https://solovault.vercel.app/admin
+{{/admin_link}}
 
 À bientôt,
 SoloVault Notifications
 ```
+
+**Explication** :
+- `{{#firstName}}...{{/firstName}}` : Affiche le bloc **seulement si** `firstName` existe
+- `{{#source}}...{{/source}}` : Affiche le bloc **seulement si** `source` existe
+- Cela permet d'avoir un template flexible qui s'adapte au contexte
 
 ---
 
