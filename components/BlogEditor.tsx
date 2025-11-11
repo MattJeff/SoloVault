@@ -30,7 +30,12 @@ export default function BlogEditor({ content, onChange }: BlogEditorProps) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        // Désactiver les extensions qu'on va remplacer
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
       Underline,
       Image.configure({
         HTMLAttributes: {

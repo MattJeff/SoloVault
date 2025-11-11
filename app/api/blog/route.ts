@@ -10,7 +10,8 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
 
     if (!supabase) {
-      return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
+      console.warn('Supabase not configured in GET /api/blog, returning empty array');
+      return NextResponse.json([]);
     }
 
     let query = supabase
@@ -20,12 +21,13 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
 
     // Filtrer par statut
-    if (status) {
+    if (status && status !== 'all') {
       query = query.eq('status', status);
-    } else {
+    } else if (!status) {
       // Par défaut, seulement les articles publiés
       query = query.eq('status', 'published');
     }
+    // Si status === 'all', on ne filtre pas
 
     // Filtrer par catégorie
     if (category) {
