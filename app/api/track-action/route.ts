@@ -113,6 +113,15 @@ export async function POST(request: NextRequest) {
 
     if (updateError) throw updateError;
 
+    console.log('✅ Action tracked:', {
+      email,
+      action,
+      pointsEarned,
+      totalPoints: updatedUser.points,
+      newBadges: newBadges.length > 0 ? newBadges : 'none',
+      level: updatedUser.level
+    });
+
     return NextResponse.json({
       success: true,
       pointsEarned,

@@ -41,6 +41,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    console.log('✅ Quiz response saved:', {
+      id: data.id,
+      email,
+      resultType,
+      answersCount: Object.keys(answers).length
+    });
+
     return NextResponse.json({
       success: true,
       id: data.id

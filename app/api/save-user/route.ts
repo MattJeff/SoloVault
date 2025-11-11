@@ -40,7 +40,19 @@ export async function POST(request: NextRequest) {
     // Sauvegarder
     fs.writeFileSync(filePath, JSON.stringify(users, null, 2));
 
-    return NextResponse.json({ success: true, user: newUser });
+    console.log('✅ User saved to database:', {
+      id: newUser.id,
+      name: `${newUser.firstName} ${newUser.lastName}`,
+      email: newUser.email,
+      source: newUser.source,
+      totalUsers: users.length
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      user: newUser,
+      message: `User saved successfully! Total users: ${users.length}`
+    });
 
   } catch (error) {
     console.error('Error saving user:', error);

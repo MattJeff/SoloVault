@@ -62,7 +62,7 @@ export default function EmailGate() {
 
     try {
       // Sauvegarder dans la base de données
-      await fetch('/api/save-user', {
+      const saveUserResponse = await fetch('/api/save-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -73,6 +73,9 @@ export default function EmailGate() {
           page: typeof window !== 'undefined' ? window.location.pathname : '/'
         })
       });
+      
+      const saveUserData = await saveUserResponse.json();
+      console.log('✅ User saved:', saveUserData);
 
       // Envoyer via EmailJS
       await emailjs.send(
@@ -99,7 +102,7 @@ export default function EmailGate() {
       const refCode = referralCode || localStorage.getItem('solovault_referral_code');
       if (refCode) {
         try {
-          await fetch('/api/referral/track', {
+          const refResponse = await fetch('/api/referral/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -107,14 +110,16 @@ export default function EmailGate() {
               referralCode: refCode
             })
           });
+          const refData = await refResponse.json();
+          console.log('✅ Referral tracked:', refData);
           localStorage.removeItem('solovault_referral_code');
         } catch (error) {
-          console.error('Error tracking referral:', error);
+          console.error('❌ Error tracking referral:', error);
         }
       }
 
       // Tracker l'action pour gamification
-      await fetch('/api/track-action', {
+      const actionResponse = await fetch('/api/track-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -122,6 +127,8 @@ export default function EmailGate() {
           action: 'EMAIL_SUBMIT'
         })
       });
+      const actionData = await actionResponse.json();
+      console.log('✅ Action tracked:', actionData);
 
       // Fermer le modal
       setIsOpen(false);
