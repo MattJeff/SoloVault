@@ -29,10 +29,21 @@ export default function Leaderboard({ onClose }: LeaderboardProps) {
   const loadLeaderboard = async () => {
     try {
       const response = await fetch('/api/leaderboard');
+      if (!response.ok) {
+        throw new Error('Failed to load leaderboard');
+      }
       const data = await response.json();
-      setEntries(data);
+      
+      // Parse badges si c'est une string JSON
+      const parsedData = data.map((entry: any) => ({
+        ...entry,
+        badges: typeof entry.badges === 'string' ? JSON.parse(entry.badges || '[]') : (entry.badges || [])
+      }));
+      
+      setEntries(parsedData);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
+      setEntries([]);
     } finally {
       setIsLoading(false);
     }
