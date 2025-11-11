@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, Download, Sun, Moon } from 'lucide-react';
+import { Menu, X, Download, Sun, Moon, User, LogOut } from 'lucide-react';
 import GamificationBadge from './GamificationBadge';
+import { getCurrentUser, logout } from '@/lib/auth';
 
 interface NavbarProps {
   variant?: 'landing' | 'dashboard';
@@ -13,6 +14,7 @@ export default function Navbar({ variant = 'dashboard' }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [mounted, setMounted] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -20,6 +22,10 @@ export default function Navbar({ variant = 'dashboard' }: NavbarProps) {
     if (savedTheme) {
       setTheme(savedTheme);
     }
+    
+    // Récupérer l'utilisateur connecté
+    const user = getCurrentUser();
+    setCurrentUser(user);
   }, []);
 
   const toggleTheme = () => {
@@ -72,6 +78,26 @@ export default function Navbar({ variant = 'dashboard' }: NavbarProps) {
                 )}
               </button>
             )}
+            
+            {/* User Menu */}
+            {mounted && currentUser && (
+              <div className="flex items-center gap-3 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg">
+                <User className="w-4 h-4 text-orange-500" />
+                <span className="text-sm text-zinc-300">{currentUser.firstName || currentUser.email}</span>
+                <button
+                  onClick={() => {
+                    logout();
+                    setCurrentUser(null);
+                    window.location.reload();
+                  }}
+                  className="text-zinc-400 hover:text-red-500 transition"
+                  title="Se déconnecter"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            
             {variant === 'landing' ? (
               <Link
                 href="/dashboard"

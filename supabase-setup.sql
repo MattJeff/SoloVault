@@ -1,7 +1,36 @@
 -- SoloVault Database Schema for Supabase
 -- Copie ce SQL dans l'éditeur SQL de Supabase : https://qwkieyypejlniuewavya.supabase.co/project/qwkieyypejlniuewavya/sql
 
--- 1. Table user_progress (Points, Badges, Niveaux)
+-- 1. Table users (Authentification)
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  first_name TEXT,
+  last_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_login_at TIMESTAMPTZ DEFAULT NOW(),
+  is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Index pour recherche rapide par email
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Enable Row Level Security
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Tout le monde peut lire les users (pour vérifier l'existence)
+CREATE POLICY "Users are viewable by everyone" ON users
+  FOR SELECT USING (true);
+
+-- Policy: Tout le monde peut créer un user (inscription)
+CREATE POLICY "Anyone can create users" ON users
+  FOR INSERT WITH CHECK (true);
+
+-- Policy: Les users peuvent mettre à jour leur propre profil
+CREATE POLICY "Users can update their own profile" ON users
+  FOR UPDATE USING (true);
+
+-- 2. Table user_progress (Points, Badges, Niveaux)
 CREATE TABLE IF NOT EXISTS user_progress (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
