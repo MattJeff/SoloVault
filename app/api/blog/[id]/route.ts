@@ -4,14 +4,14 @@ import { supabase } from '@/lib/supabase';
 // GET - Récupérer un article par ID ou slug
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!supabase) {
       return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Essayer de récupérer par ID ou par slug
     let query = supabase
@@ -52,11 +52,11 @@ export async function GET(
 // PUT - Mettre à jour un article
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
-    const { id } = params;
+    const { id } = await params;
 
     if (!supabase) {
       return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
@@ -114,10 +114,10 @@ export async function PUT(
 // DELETE - Supprimer un article
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!supabase) {
       return NextResponse.json({ error: 'Supabase not configured' }, { status: 500 });
