@@ -1,46 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    const { firstName, email, answers, result, completedAt } = await request.json();
+    const body = await request.json();
+    const { email, answers, resultType } = body;
 
-    // Validation
-    if (!firstName || !email || !answers || !result) {
+    if (!email || !answers) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Lire le fichier quiz-responses.json
-    const filePath = path.join(process.cwd(), 'data', 'quiz-responses.json');
-    let responses = [];
+    // Save quiz response
+    const { data, error } = await supabase
+      .from('quiz_responses')
+      .insert({
+        email,
+        answers,
+        result_type: resultType || null
+      })
+      .select()
+      .single();
 
-    if (fs.existsSync(filePath)) {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      responses = JSON.parse(fileContent);
-    }
+    if (error) throw error;
 
-    // Créer la nouvelle réponse
-    const newResponse = {
-      id: Date.now().toString(),
-      firstName,
-      email,
-      answers,
-      result,
-      completedAt: completedAt || new Date().toISOString(),
-      createdAt: new Date().toISOString()
-    };
-
-    // Ajouter au début de la liste
-    responses.unshift(newResponse);
-
-    // Sauvegarder
-    fs.writeFileSync(filePath, JSON.stringify(responses, null, 2));
-
-    return NextResponse.json({ success: true, response: newResponse });
+    return NextResponse.json({
+      success: true,
+      id: data.id
+    });
 
   } catch (error) {
     console.error('Error saving quiz response:', error);

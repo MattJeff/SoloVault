@@ -1,15 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-interface ReferralData {
-  email: string;
-  referralCode: string;
-  referredBy?: string;
-  referredUsers: string[];
-  callEarned: boolean;
-  createdAt: string;
-}
+import { supabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,53 +13,45 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Ensure data directory exists
-    const dataDir = path.join(process.cwd(), 'data');
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
+    // Get or create user referral data
+    const { data: existingReferral, error: fetchError } = await supabase
+      .from('referrals')
+      .select('*')
+      .eq('email', email)
+      .single();
 
-    const filePath = path.join(dataDir, 'referrals.json');
-    let allReferrals: ReferralData[] = [];
+    let referralData;
 
-    // Read existing referrals
-    if (fs.existsSync(filePath)) {
-      try {
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-        if (fileContent.trim()) {
-          allReferrals = JSON.parse(fileContent);
-        }
-      } catch (parseError) {
-        console.error('Error parsing referrals.json:', parseError);
-        // Reset to empty array if file is corrupted
-        allReferrals = [];
-      }
-    }
-
-    // Find or create user referral data
-    let userReferral = allReferrals.find(r => r.email === email);
-
-    if (!userReferral) {
-      // Generate unique referral code
+    if (fetchError && fetchError.code === 'PGRST116') {
+      // User doesn't exist, create new
       const referralCode = generateReferralCode(email);
 
-      userReferral = {
+      const newReferral = {
         email,
-        referralCode,
-        referredUsers: [],
-        callEarned: false,
-        createdAt: new Date().toISOString()
+        referral_code: referralCode,
+        referred_users: [],
+        call_earned: false
       };
 
-      allReferrals.push(userReferral);
-      fs.writeFileSync(filePath, JSON.stringify(allReferrals, null, 2));
+      const { data: createdReferral, error: createError } = await supabase
+        .from('referrals')
+        .insert(newReferral)
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      referralData = createdReferral;
+    } else if (fetchError) {
+      throw fetchError;
+    } else {
+      referralData = existingReferral;
     }
 
     return NextResponse.json({
-      referralCode: userReferral.referralCode || '',
-      referralsCount: userReferral.referredUsers?.length || 0,
-      referredUsers: userReferral.referredUsers || [],
-      callEarned: userReferral.callEarned || false
+      referralCode: referralData.referral_code || '',
+      referralsCount: (referralData.referred_users as string[])?.length || 0,
+      referredUsers: referralData.referred_users || [],
+      callEarned: referralData.call_earned || false
     });
 
   } catch (error) {

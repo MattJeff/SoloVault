@@ -1,31 +1,19 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { UserProgress } from '@/lib/gamification';
+import { supabase } from '@/lib/supabase';
 
 export async function GET() {
   try {
-    const filePath = path.join(process.cwd(), 'data', 'user-progress.json');
+    // Get top 50 users sorted by points descending
+    const { data: leaderboard, error } = await supabase
+      .from('user_progress')
+      .select('email, points, level, badges')
+      .order('points', { ascending: false })
+      .limit(50);
 
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json([]);
-    }
+    if (error) throw error;
 
-    const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const allProgress: UserProgress[] = JSON.parse(fileContent);
+    return NextResponse.json(leaderboard || []);
 
-    // Sort by points descending
-    const leaderboard = allProgress
-      .sort((a, b) => b.points - a.points)
-      .slice(0, 50) // Top 50
-      .map(p => ({
-        email: p.email,
-        points: p.points,
-        level: p.level,
-        badges: p.badges
-      }));
-
-    return NextResponse.json(leaderboard);
   } catch (error) {
     console.error('Error reading leaderboard:', error);
     return NextResponse.json(

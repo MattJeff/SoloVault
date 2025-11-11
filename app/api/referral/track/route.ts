@@ -1,15 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-interface ReferralData {
-  email: string;
-  referralCode: string;
-  referredBy?: string;
-  referredUsers: string[];
-  callEarned: boolean;
-  createdAt: string;
-}
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,32 +12,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure data directory exists
-    const dataDir = path.join(process.cwd(), 'data');
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-
-    const filePath = path.join(dataDir, 'referrals.json');
-    let allReferrals: ReferralData[] = [];
-
-    // Read existing referrals
-    if (fs.existsSync(filePath)) {
-      try {
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-        if (fileContent.trim()) {
-          allReferrals = JSON.parse(fileContent);
-        }
-      } catch (parseError) {
-        console.error('Error parsing referrals.json:', parseError);
-        allReferrals = [];
-      }
-    }
-
     // Find the referrer by code
-    const referrer = allReferrals.find(r => r.referralCode === referralCode);
+    const { data: referrer, error: referrerError } = await supabase
+      .from('referrals')
+      .select('*')
+      .eq('referral_code', referralCode)
+      .single();
 
-    if (!referrer) {
+    if (referrerError || !referrer) {
       return NextResponse.json(
         { error: 'Invalid referral code' },
         { status: 404 }
@@ -55,7 +27,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = allReferrals.find(r => r.email === email);
+    const { data: existingUser } = await supabase
+      .from('referrals')
+      .select('email')
+      .eq('email', email)
+      .single();
+
     if (existingUser) {
       return NextResponse.json(
         { message: 'User already registered' },
@@ -72,34 +49,51 @@ export async function POST(request: NextRequest) {
     }
 
     // Add new user to referred list
-    if (!referrer.referredUsers.includes(email)) {
-      referrer.referredUsers.push(email);
+    const referredUsers = referrer.referred_users as string[];
+
+    if (!referredUsers.includes(email)) {
+      const newReferredUsers = [...referredUsers, email];
 
       // Check if call is earned (3 referrals)
-      if (referrer.referredUsers.length >= 3 && !referrer.callEarned) {
-        referrer.callEarned = true;
-      }
+      const callEarned = newReferredUsers.length >= 3;
 
-      // Save updated referrals
-      fs.writeFileSync(filePath, JSON.stringify(allReferrals, null, 2));
+      // Update referrer
+      const { error: updateError } = await supabase
+        .from('referrals')
+        .update({
+          referred_users: newReferredUsers,
+          call_earned: callEarned
+        })
+        .eq('email', referrer.email);
+
+      if (updateError) throw updateError;
 
       // Track action for gamification
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/track-action`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: referrer.email,
-          action: 'REFERRAL',
-          metadata: { referredUser: email }
-        })
-      }).catch(err => console.error('Failed to track referral:', err));
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/track-action`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: referrer.email,
+            action: 'REFERRAL',
+            metadata: { referredUser: email }
+          })
+        });
+      } catch (err) {
+        console.error('Failed to track referral:', err);
+      }
+
+      return NextResponse.json({
+        success: true,
+        referrerEmail: referrer.email,
+        totalReferrals: newReferredUsers.length,
+        callEarned
+      });
     }
 
     return NextResponse.json({
       success: true,
-      referrerEmail: referrer.email,
-      totalReferrals: referrer.referredUsers.length,
-      callEarned: referrer.callEarned
+      message: 'Already referred'
     });
 
   } catch (error) {

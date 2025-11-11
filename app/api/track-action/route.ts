@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { ACTIONS_POINTS, checkBadgeEligibility, UserProgress } from '@/lib/gamification';
+import { supabase } from '@/lib/supabase';
+import { ACTIONS_POINTS, checkBadgeEligibility } from '@/lib/gamification';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,20 +13,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const filePath = path.join(process.cwd(), 'data', 'user-progress.json');
-    let allProgress: UserProgress[] = [];
+    // Get or create user progress
+    const { data: existingUser, error: fetchError } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('email', email)
+      .single();
 
-    // Read existing progress
-    if (fs.existsSync(filePath)) {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      allProgress = JSON.parse(fileContent);
-    }
+    let userProgress;
 
-    // Find or create user progress
-    let userProgress = allProgress.find(p => p.email === email);
-
-    if (!userProgress) {
-      userProgress = {
+    if (fetchError && fetchError.code === 'PGRST116') {
+      // User doesn't exist, create new
+      const newUser = {
         email,
         points: 0,
         badges: [],
@@ -38,54 +35,77 @@ export async function POST(request: NextRequest) {
           projectsViewed: 0,
           dataDownloaded: false,
           referrals: 0
-        },
-        createdAt: new Date().toISOString(),
-        lastActivity: new Date().toISOString()
+        }
       };
-      allProgress.push(userProgress);
+
+      const { data: createdUser, error: createError } = await supabase
+        .from('user_progress')
+        .insert(newUser)
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      userProgress = createdUser;
+    } else if (fetchError) {
+      throw fetchError;
+    } else {
+      userProgress = existingUser;
     }
 
     // Award points based on action
     const pointsEarned = (ACTIONS_POINTS as any)[action] || 0;
-    userProgress.points += pointsEarned;
-    userProgress.lastActivity = new Date().toISOString();
+    const newPoints = userProgress.points + pointsEarned;
 
     // Update action tracking
+    const actions = { ...userProgress.actions };
     switch (action) {
       case 'EMAIL_SUBMIT':
-        userProgress.actions.emailSubmitted = true;
+        actions.emailSubmitted = true;
         break;
       case 'QUIZ_COMPLETE':
-        userProgress.actions.quizCompleted = true;
+        actions.quizCompleted = true;
         break;
       case 'VIEW_PROJECT':
-        userProgress.actions.projectsViewed += 1;
+        actions.projectsViewed += 1;
         break;
       case 'DOWNLOAD_DATA':
-        userProgress.actions.dataDownloaded = true;
+        actions.dataDownloaded = true;
         break;
       case 'REFERRAL':
-        userProgress.actions.referrals += 1;
+        actions.referrals += 1;
         break;
     }
 
     // Check for new badges
-    const newBadges = checkBadgeEligibility(userProgress);
-    newBadges.forEach(badgeId => {
-      if (!userProgress!.badges.includes(badgeId)) {
-        userProgress!.badges.push(badgeId);
-      }
-    });
+    const tempProgress = {
+      ...userProgress,
+      points: newPoints,
+      actions
+    };
+    const newBadges = checkBadgeEligibility(tempProgress);
+    const allBadges = [...new Set([...userProgress.badges, ...newBadges])];
 
-    // Save updated progress
-    fs.writeFileSync(filePath, JSON.stringify(allProgress, null, 2));
+    // Update user progress
+    const { data: updatedUser, error: updateError } = await supabase
+      .from('user_progress')
+      .update({
+        points: newPoints,
+        badges: allBadges,
+        actions,
+        last_activity: new Date().toISOString()
+      })
+      .eq('email', email)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
 
     return NextResponse.json({
       success: true,
       pointsEarned,
-      totalPoints: userProgress.points,
+      totalPoints: updatedUser.points,
       newBadges,
-      level: userProgress.level
+      level: updatedUser.level
     });
 
   } catch (error) {
