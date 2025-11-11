@@ -7,10 +7,16 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   first_name TEXT,
   last_name TEXT,
+  source TEXT DEFAULT 'Unknown',
+  page TEXT DEFAULT '/',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   last_login_at TIMESTAMPTZ DEFAULT NOW(),
   is_active BOOLEAN DEFAULT TRUE
 );
+
+-- Ajouter les colonnes si elles n'existent pas (migration)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'Unknown';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS page TEXT DEFAULT '/';
 
 -- Index pour recherche rapide par email
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);

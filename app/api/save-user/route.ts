@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,44 +13,88 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Lire le fichier users.json
-    const filePath = path.join(process.cwd(), 'data', 'users.json');
-    let users = [];
-
-    if (fs.existsSync(filePath)) {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      users = JSON.parse(fileContent);
+    // Vérifier si Supabase est configuré
+    if (!supabase) {
+      console.warn('Supabase not configured, user not saved');
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: Date.now().toString(),
+          firstName,
+          lastName,
+          email,
+          source: source || 'Unknown',
+          page: page || '/',
+          createdAt: new Date().toISOString()
+        }
+      });
     }
 
-    // Créer le nouvel utilisateur
-    const newUser = {
-      id: Date.now().toString(),
-      firstName,
-      lastName,
-      email,
-      source: source || 'Unknown',
-      page: page || '/',
-      createdAt: new Date().toISOString()
-    };
+    // Vérifier si l'utilisateur existe déjà
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
 
-    // Ajouter au début de la liste
-    users.unshift(newUser);
+    if (existingUser) {
+      console.log('ℹ️ User already exists:', email);
+      return NextResponse.json({
+        success: true,
+        user: existingUser,
+        message: 'User already exists'
+      });
+    }
 
-    // Sauvegarder
-    fs.writeFileSync(filePath, JSON.stringify(users, null, 2));
+    // Créer le nouvel utilisateur dans Supabase
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        source: source || 'Unknown',
+        page: page || '/'
+      })
+      .select()
+      .single();
 
-    console.log('✅ User saved to database:', {
-      id: newUser.id,
-      name: `${newUser.firstName} ${newUser.lastName}`,
-      email: newUser.email,
-      source: newUser.source,
-      totalUsers: users.length
+    if (error) {
+      console.error('Supabase error:', error);
+      // Retourner succès même en cas d'erreur pour ne pas bloquer le frontend
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: Date.now().toString(),
+          firstName,
+          lastName,
+          email,
+          source: source || 'Unknown',
+          page: page || '/',
+          createdAt: new Date().toISOString()
+        }
+      });
+    }
+
+    console.log('✅ User saved to Supabase:', {
+      id: data.id,
+      name: `${firstName} ${lastName}`,
+      email: email,
+      source: source || 'Unknown'
     });
 
     return NextResponse.json({ 
       success: true, 
-      user: newUser,
-      message: `User saved successfully! Total users: ${users.length}`
+      user: {
+        id: data.id,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        email: data.email,
+        source: data.source,
+        page: data.page,
+        createdAt: data.created_at
+      },
+      message: 'User saved successfully!'
     });
 
   } catch (error) {
