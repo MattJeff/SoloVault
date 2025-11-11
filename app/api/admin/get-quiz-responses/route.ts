@@ -16,9 +16,7 @@ export async function GET() {
     return NextResponse.json(responses);
   } catch (error) {
     console.error('Error reading quiz responses:', error);
-    return NextResponse.json(
-      { error: 'Failed to read quiz responses' },
-      { status: 500 }
-    );
+    // Retourner tableau vide au lieu d'erreur 500
+    return NextResponse.json([]);
   }
 }

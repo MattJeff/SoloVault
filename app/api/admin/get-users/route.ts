@@ -16,9 +16,7 @@ export async function GET() {
     return NextResponse.json(users);
   } catch (error) {
     console.error('Error reading users:', error);
-    return NextResponse.json(
-      { error: 'Failed to read users' },
-      { status: 500 }
-    );
+    // Retourner tableau vide au lieu d'erreur 500
+    return NextResponse.json([]);
   }
 }
