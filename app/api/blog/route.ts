@@ -39,12 +39,21 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      // Si la table n'existe pas, retourner un tableau vide au lieu d'une erreur
+      if (error.code === '42P01') {
+        console.warn('Table blog_posts does not exist. Please run supabase-blog-table.sql');
+        return NextResponse.json([]);
+      }
+      throw error;
+    }
 
     return NextResponse.json(data || []);
   } catch (error) {
     console.error('Error fetching blog posts:', error);
-    return NextResponse.json({ error: 'Failed to fetch blog posts' }, { status: 500 });
+    // Retourner un tableau vide au lieu d'une erreur pour éviter de casser le frontend
+    return NextResponse.json([]);
   }
 }
 

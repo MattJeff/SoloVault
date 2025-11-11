@@ -227,9 +227,17 @@ export default function AdminPage() {
     try {
       const response = await fetch('/api/blog?status=all');
       const data = await response.json();
-      setBlogPosts(data);
+      
+      // Vérifier que data est un tableau
+      if (Array.isArray(data)) {
+        setBlogPosts(data);
+      } else {
+        console.error('API returned non-array data:', data);
+        setBlogPosts([]);
+      }
     } catch (error) {
       console.error('Error loading blog posts:', error);
+      setBlogPosts([]);
     } finally {
       setIsLoadingBlog(false);
     }

@@ -31,9 +31,17 @@ export default function AstucesPage() {
     try {
       const response = await fetch('/api/blog?status=published');
       const data = await response.json();
-      setPosts(data);
+      
+      // Vérifier que data est un tableau
+      if (Array.isArray(data)) {
+        setPosts(data);
+      } else {
+        console.error('API returned non-array data:', data);
+        setPosts([]);
+      }
     } catch (error) {
       console.error('Error loading posts:', error);
+      setPosts([]);
     } finally {
       setIsLoading(false);
     }
