@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { TrendingUp, Users, Zap, Sparkles, Calculator, FileText, Trophy } from 'lucide-react';
+import { TrendingUp, Users, Zap, Sparkles, Calculator, FileText, Trophy, UserPlus } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import SaaSQuiz from '@/components/SaaSQuiz';
 import ExitIntentPopup from '@/components/ExitIntentPopup';
@@ -10,6 +10,7 @@ import SocialProofNotifications from '@/components/SocialProofNotifications';
 import RevenueCalculator from '@/components/RevenueCalculator';
 import ContentUpgrades from '@/components/ContentUpgrades';
 import Leaderboard from '@/components/Leaderboard';
+import ReferralSystem from '@/components/ReferralSystem';
 import { useState, useEffect } from 'react';
 
 export default function LandingPage() {
@@ -19,6 +20,7 @@ export default function LandingPage() {
   const [showCalculator, setShowCalculator] = useState(false);
   const [showContentUpgrades, setShowContentUpgrades] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showReferral, setShowReferral] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -200,67 +202,88 @@ export default function LandingPage() {
             Accède à des outils exclusifs pour valider ton idée et planifier ton lancement
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Revenue Calculator */}
-            <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-2 border-blue-500/30 rounded-2xl p-8 hover:border-blue-500 transition cursor-pointer"
+            <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-2 border-blue-500/30 rounded-2xl p-6 hover:border-blue-500 transition cursor-pointer"
               onClick={() => setShowCalculator(true)}>
-              <div className="w-16 h-16 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6">
-                <Calculator className="w-8 h-8 text-blue-500" />
+              <div className="w-14 h-14 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
+                <Calculator className="w-7 h-7 text-blue-500" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Calculateur Revenue</h3>
-              <p className="text-zinc-400 mb-6">
-                Projette ton MRR et ARR en fonction de ton trafic, conversion et pricing
+              <h3 className="text-xl font-bold mb-2">Calculateur Revenue</h3>
+              <p className="text-zinc-400 text-sm mb-4">
+                Projette ton MRR et ARR
               </p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowCalculator(true);
                 }}
-                className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition"
+                className="w-full py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition text-sm"
               >
-                Calculer mon revenue
+                Calculer
               </button>
             </div>
 
             {/* Content Upgrades */}
-            <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-2 border-green-500/30 rounded-2xl p-8 hover:border-green-500 transition cursor-pointer"
+            <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border-2 border-green-500/30 rounded-2xl p-6 hover:border-green-500 transition cursor-pointer"
               onClick={() => setShowContentUpgrades(true)}>
-              <div className="w-16 h-16 bg-green-500/20 rounded-xl flex items-center justify-center mb-6">
-                <FileText className="w-8 h-8 text-green-500" />
+              <div className="w-14 h-14 bg-green-500/20 rounded-xl flex items-center justify-center mb-4">
+                <FileText className="w-7 h-7 text-green-500" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Templates Gratuits</h3>
-              <p className="text-zinc-400 mb-6">
-                Checklist MVP 30 jours + Template Pitch Deck pour investors
+              <h3 className="text-xl font-bold mb-2">Templates Gratuits</h3>
+              <p className="text-zinc-400 text-sm mb-4">
+                Checklist MVP + Pitch Deck
               </p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowContentUpgrades(true);
                 }}
-                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition"
+                className="w-full py-2.5 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition text-sm"
               >
-                Télécharger les templates
+                Télécharger
+              </button>
+            </div>
+
+            {/* Referral System */}
+            <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/5 border-2 border-purple-500/30 rounded-2xl p-6 hover:border-purple-500 transition cursor-pointer"
+              onClick={() => setShowReferral(true)}>
+              <div className="w-14 h-14 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
+                <UserPlus className="w-7 h-7 text-purple-500" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Parrainage</h3>
+              <p className="text-zinc-400 text-sm mb-4">
+                Call gratuit 30 min 🎁
+              </p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowReferral(true);
+                }}
+                className="w-full py-2.5 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-lg transition text-sm"
+              >
+                Parrainer
               </button>
             </div>
 
             {/* Leaderboard */}
-            <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-2 border-orange-500/30 rounded-2xl p-8 hover:border-orange-500 transition cursor-pointer"
+            <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-2 border-orange-500/30 rounded-2xl p-6 hover:border-orange-500 transition cursor-pointer"
               onClick={() => setShowLeaderboard(true)}>
-              <div className="w-16 h-16 bg-orange-500/20 rounded-xl flex items-center justify-center mb-6">
-                <Trophy className="w-8 h-8 text-orange-500" />
+              <div className="w-14 h-14 bg-orange-500/20 rounded-xl flex items-center justify-center mb-4">
+                <Trophy className="w-7 h-7 text-orange-500" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Leaderboard</h3>
-              <p className="text-zinc-400 mb-6">
-                Découvre le classement des solopreneurs les plus actifs sur SoloVault
+              <h3 className="text-xl font-bold mb-2">Leaderboard</h3>
+              <p className="text-zinc-400 text-sm mb-4">
+                Top solopreneurs
               </p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowLeaderboard(true);
                 }}
-                className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+                className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition text-sm"
               >
-                Voir le classement
+                Voir classement
               </button>
             </div>
           </div>
@@ -323,6 +346,7 @@ export default function LandingPage() {
       {showCalculator && <RevenueCalculator onClose={() => setShowCalculator(false)} />}
       {showContentUpgrades && <ContentUpgrades onClose={() => setShowContentUpgrades(false)} />}
       {showLeaderboard && <Leaderboard onClose={() => setShowLeaderboard(false)} />}
+      {showReferral && <ReferralSystem onClose={() => setShowReferral(false)} />}
     </div>
   );
 }

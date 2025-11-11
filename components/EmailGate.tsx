@@ -11,10 +11,22 @@ export default function EmailGate() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [referralCode, setReferralCode] = useState<string | null>(null);
 
   useEffect(() => {
     // Vérifier si l'utilisateur a déjà soumis son email
     const hasSubmitted = localStorage.getItem('solovault_email_submitted');
+
+    // Récupérer le code de parrainage depuis l'URL
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const refCode = urlParams.get('ref');
+      if (refCode) {
+        setReferralCode(refCode);
+        localStorage.setItem('solovault_referral_code', refCode);
+      }
+    }
+
     if (!hasSubmitted) {
       // Petit délai pour UX (optionnel)
       setTimeout(() => setIsOpen(true), 500);
@@ -82,6 +94,34 @@ export default function EmailGate() {
       localStorage.setItem('solovault_email', email);
       localStorage.setItem('solovault_email_submitted', 'true');
       localStorage.setItem('solovault_email_date', new Date().toISOString());
+
+      // Tracker le parrainage si un code existe
+      const refCode = referralCode || localStorage.getItem('solovault_referral_code');
+      if (refCode) {
+        try {
+          await fetch('/api/referral/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              referralCode: refCode
+            })
+          });
+          localStorage.removeItem('solovault_referral_code');
+        } catch (error) {
+          console.error('Error tracking referral:', error);
+        }
+      }
+
+      // Tracker l'action pour gamification
+      await fetch('/api/track-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          action: 'EMAIL_SUBMIT'
+        })
+      });
 
       // Fermer le modal
       setIsOpen(false);
