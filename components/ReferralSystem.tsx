@@ -36,10 +36,25 @@ export default function ReferralSystem({ onClose }: ReferralSystemProps) {
 
     try {
       const response = await fetch(`/api/referral/stats?email=${encodeURIComponent(userEmail)}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch referral stats');
+      }
       const data = await response.json();
-      setStats(data);
+      setStats({
+        referralCode: data.referralCode || '',
+        referralsCount: data.referralsCount || 0,
+        referredUsers: data.referredUsers || [],
+        callEarned: data.callEarned || false
+      });
     } catch (error) {
       console.error('Error loading referral stats:', error);
+      // Set default values on error
+      setStats({
+        referralCode: '',
+        referralsCount: 0,
+        referredUsers: [],
+        callEarned: false
+      });
     }
   };
 

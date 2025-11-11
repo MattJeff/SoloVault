@@ -22,13 +22,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const filePath = path.join(process.cwd(), 'data', 'referrals.json');
+    // Ensure data directory exists
+    const dataDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
+    const filePath = path.join(dataDir, 'referrals.json');
     let allReferrals: ReferralData[] = [];
 
     // Read existing referrals
     if (fs.existsSync(filePath)) {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      allReferrals = JSON.parse(fileContent);
+      try {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        if (fileContent.trim()) {
+          allReferrals = JSON.parse(fileContent);
+        }
+      } catch (parseError) {
+        console.error('Error parsing referrals.json:', parseError);
+        allReferrals = [];
+      }
     }
 
     // Find the referrer by code

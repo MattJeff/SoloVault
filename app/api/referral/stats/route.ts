@@ -23,13 +23,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const filePath = path.join(process.cwd(), 'data', 'referrals.json');
+    // Ensure data directory exists
+    const dataDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
+    const filePath = path.join(dataDir, 'referrals.json');
     let allReferrals: ReferralData[] = [];
 
     // Read existing referrals
     if (fs.existsSync(filePath)) {
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      allReferrals = JSON.parse(fileContent);
+      try {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        if (fileContent.trim()) {
+          allReferrals = JSON.parse(fileContent);
+        }
+      } catch (parseError) {
+        console.error('Error parsing referrals.json:', parseError);
+        // Reset to empty array if file is corrupted
+        allReferrals = [];
+      }
     }
 
     // Find or create user referral data
@@ -48,27 +62,26 @@ export async function GET(request: NextRequest) {
       };
 
       allReferrals.push(userReferral);
-
-      // Ensure data directory exists
-      const dataDir = path.join(process.cwd(), 'data');
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-      }
-
       fs.writeFileSync(filePath, JSON.stringify(allReferrals, null, 2));
     }
 
     return NextResponse.json({
-      referralCode: userReferral.referralCode,
-      referralsCount: userReferral.referredUsers.length,
-      referredUsers: userReferral.referredUsers,
-      callEarned: userReferral.callEarned
+      referralCode: userReferral.referralCode || '',
+      referralsCount: userReferral.referredUsers?.length || 0,
+      referredUsers: userReferral.referredUsers || [],
+      callEarned: userReferral.callEarned || false
     });
 
   } catch (error) {
     console.error('Error getting referral stats:', error);
     return NextResponse.json(
-      { error: 'Failed to get referral stats' },
+      {
+        error: 'Failed to get referral stats',
+        referralCode: '',
+        referralsCount: 0,
+        referredUsers: [],
+        callEarned: false
+      },
       { status: 500 }
     );
   }
