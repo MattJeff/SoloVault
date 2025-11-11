@@ -29,6 +29,7 @@ export default function BlogEditor({ content, onChange }: BlogEditorProps) {
   const [youtubeUrl, setYoutubeUrl] = useState('');
 
   const editor = useEditor({
+    immediatelyRender: false, // Fix SSR hydration mismatch
     extensions: [
       StarterKit.configure({
         // Désactiver les extensions qu'on va remplacer
