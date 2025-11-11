@@ -64,6 +64,7 @@ export default function AdminPage() {
   // Blog states
   const [blogPosts, setBlogPosts] = useState<any[]>([]);
   const [isLoadingBlog, setIsLoadingBlog] = useState(false);
+  const [blogConfigured, setBlogConfigured] = useState(true); // Assume configuré par défaut
   const [showBlogEditor, setShowBlogEditor] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
   const [blogForm, setBlogForm] = useState({
@@ -724,8 +725,8 @@ export default function AdminPage() {
         {/* BLOG TAB */}
         {activeTab === 'blog' && !showBlogEditor && (
           <div className="space-y-6">
-            {/* Info Banner */}
-            {blogPosts.length === 0 && !isLoadingBlog && (
+            {/* Info Banner - Seulement si vraiment pas configuré */}
+            {!blogConfigured && blogPosts.length === 0 && !isLoadingBlog && (
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />

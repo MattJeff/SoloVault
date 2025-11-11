@@ -43,6 +43,10 @@ CREATE TRIGGER trigger_update_blog_posts_updated_at
 -- Activer Row Level Security
 ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
 
+-- Supprimer les policies existantes si elles existent
+DROP POLICY IF EXISTS "Public can read published posts" ON blog_posts;
+DROP POLICY IF EXISTS "Admin full access" ON blog_posts;
+
 -- Policy pour lecture publique des articles publiés
 CREATE POLICY "Public can read published posts"
   ON blog_posts FOR SELECT
