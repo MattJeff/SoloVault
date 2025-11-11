@@ -724,6 +724,24 @@ export default function AdminPage() {
         {/* BLOG TAB */}
         {activeTab === 'blog' && !showBlogEditor && (
           <div className="space-y-6">
+            {/* Info Banner */}
+            {blogPosts.length === 0 && !isLoadingBlog && (
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-blue-500 mb-1">Configuration requise</h3>
+                    <p className="text-sm text-zinc-300 mb-2">
+                      La table <code className="px-1.5 py-0.5 bg-zinc-800 rounded text-orange-500">blog_posts</code> n'existe pas encore dans Supabase.
+                    </p>
+                    <p className="text-sm text-zinc-400">
+                      📖 Consulte le fichier <strong>BLOG_SETUP_GUIDE.md</strong> ou exécute <strong>supabase-blog-table.sql</strong> dans ton SQL Editor Supabase.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold">📝 Gestion du Blog</h2>
