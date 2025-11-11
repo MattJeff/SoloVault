@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { Upload, Lock, Check, AlertCircle, Download, History } from 'lucide-react';
+import { Upload, Lock, Check, AlertCircle, Download, History, Users, TrendingUp, Award, MessageSquare, UserPlus, Activity, BarChart3, PieChart } from 'lucide-react';
+import { LineChart, Line, BarChart, Bar, PieChart as RechartsPie, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface User {
   id: string;
@@ -14,6 +15,36 @@ interface User {
   createdAt: string;
 }
 
+interface AdminStats {
+  users: {
+    total: number;
+    byDay: { date: string; count: number }[];
+    recent: any[];
+  };
+  progress: {
+    totalPoints: number;
+    avgPoints: number;
+    topUsers: any[];
+    badgeDistribution: { name: string; count: number }[];
+  };
+  quiz: {
+    total: number;
+    resultDistribution: { type: string; count: number }[];
+    recent: any[];
+  };
+  referrals: {
+    total: number;
+    callsEarned: number;
+    topReferrers: any[];
+  };
+  actions: {
+    emailSubmitted: number;
+    quizCompleted: number;
+    dataDownloaded: number;
+    totalProjectsViewed: number;
+  };
+}
+
 export default function AdminPage() {
   const [code, setCode] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -23,6 +54,9 @@ export default function AdminPage() {
   const [projectCount, setProjectCount] = useState(0);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'quiz' | 'referrals' | 'upload'>('overview');
 
   const handleAuth = () => {
     if (code === process.env.NEXT_PUBLIC_ADMIN_CODE || code === '1234') {
@@ -133,6 +167,22 @@ export default function AdminPage() {
     }
   };
 
+  // Load stats from Supabase
+  const loadStats = async () => {
+    setIsLoadingStats(true);
+    try {
+      const response = await fetch('/api/admin/stats');
+      const data = await response.json();
+      if (!data.error) {
+        setStats(data);
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
   // Download users as Excel
   const downloadUsers = () => {
     const excelData = users.map(user => ({
@@ -160,10 +210,11 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Load users when authenticated
+  // Load data when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       loadUsers();
+      loadStats();
     }
   }, [isAuthenticated]);
 
@@ -201,33 +252,324 @@ export default function AdminPage() {
     );
   }
 
+  const COLORS = ['#f97316', '#fb923c', '#fdba74', '#fed7aa', '#ffedd5'];
+
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-black text-white p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">📊 Admin Dashboard</h1>
-          <p className="text-zinc-400">Gérez la base de données SoloVault</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">📊 Admin Dashboard</h1>
+            <p className="text-zinc-400">Gérez et analysez SoloVault</p>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem('admin_authenticated');
+              setIsAuthenticated(false);
+            }}
+            className="px-4 py-2 bg-zinc-900 border border-zinc-800 hover:border-red-500 text-red-500 rounded-lg font-semibold transition"
+          >
+            🔒 Déconnexion
+          </button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <div className="text-zinc-400 text-sm mb-2">Projets actifs</div>
-            <div className="text-3xl font-bold">{projectCount || 50}</div>
-          </div>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <div className="text-zinc-400 text-sm mb-2">Utilisateurs inscrits</div>
-            <div className="text-3xl font-bold">{users.length}</div>
-          </div>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-            <div className="text-zinc-400 text-sm mb-2">Format</div>
-            <div className="text-lg font-semibold">Excel (.xlsx)</div>
-          </div>
+        {/* Navigation Tabs */}
+        <div className="mb-8 flex gap-2 overflow-x-auto pb-2">
+          {[
+            { id: 'overview', label: '📊 Vue d\'ensemble', icon: BarChart3 },
+            { id: 'users', label: '👥 Utilisateurs', icon: Users },
+            { id: 'quiz', label: '🎯 Quiz', icon: MessageSquare },
+            { id: 'referrals', label: '🎁 Parrainages', icon: UserPlus },
+            { id: 'upload', label: '📤 Upload', icon: Upload }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-zinc-900 border border-zinc-800 hover:border-orange-500'
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Upload Section */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
+        {/* Loading State */}
+        {isLoadingStats && (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-2 border-orange-500 border-t-transparent" />
+          </div>
+        )}
+
+        {/* OVERVIEW TAB */}
+        {activeTab === 'overview' && stats && (
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Users className="w-5 h-5 text-orange-500" />
+                  <div className="text-zinc-400 text-sm">Utilisateurs</div>
+                </div>
+                <div className="text-3xl font-bold">{stats.users.total}</div>
+              </div>
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <MessageSquare className="w-5 h-5 text-orange-500" />
+                  <div className="text-zinc-400 text-sm">Quiz complétés</div>
+                </div>
+                <div className="text-3xl font-bold">{stats.quiz.total}</div>
+              </div>
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <UserPlus className="w-5 h-5 text-orange-500" />
+                  <div className="text-zinc-400 text-sm">Parrainages</div>
+                </div>
+                <div className="text-3xl font-bold">{stats.referrals.total}</div>
+              </div>
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <Award className="w-5 h-5 text-orange-500" />
+                  <div className="text-zinc-400 text-sm">Points totaux</div>
+                </div>
+                <div className="text-3xl font-bold">{stats.progress.totalPoints}</div>
+              </div>
+            </div>
+
+            {/* Charts Row */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Users Growth Chart */}
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <h3 className="text-xl font-bold mb-4">📈 Croissance utilisateurs (7 jours)</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={stats.users.byDay}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                    <XAxis dataKey="date" stroke="#71717a" tick={{ fontSize: 12 }} />
+                    <YAxis stroke="#71717a" />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
+                      labelStyle={{ color: '#a1a1aa' }}
+                    />
+                    <Line type="monotone" dataKey="count" stroke="#f97316" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Quiz Results Distribution */}
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <h3 className="text-xl font-bold mb-4">🎯 Distribution des profils quiz</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <RechartsPie>
+                    <Pie
+                      data={stats.quiz.resultDistribution}
+                      dataKey="count"
+                      nameKey="type"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label
+                    >
+                      {stats.quiz.resultDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
+                    />
+                  </RechartsPie>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Actions Stats */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+              <h3 className="text-xl font-bold mb-4">⚡ Actions utilisateurs</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-black border border-zinc-800 rounded-lg p-4">
+                  <div className="text-zinc-400 text-sm mb-1">Emails soumis</div>
+                  <div className="text-2xl font-bold text-orange-500">{stats.actions.emailSubmitted}</div>
+                </div>
+                <div className="bg-black border border-zinc-800 rounded-lg p-4">
+                  <div className="text-zinc-400 text-sm mb-1">Quiz complétés</div>
+                  <div className="text-2xl font-bold text-orange-500">{stats.actions.quizCompleted}</div>
+                </div>
+                <div className="bg-black border border-zinc-800 rounded-lg p-4">
+                  <div className="text-zinc-400 text-sm mb-1">Téléchargements</div>
+                  <div className="text-2xl font-bold text-orange-500">{stats.actions.dataDownloaded}</div>
+                </div>
+                <div className="bg-black border border-zinc-800 rounded-lg p-4">
+                  <div className="text-zinc-400 text-sm mb-1">Projets vus</div>
+                  <div className="text-2xl font-bold text-orange-500">{stats.actions.totalProjectsViewed}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Users */}
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+              <h3 className="text-xl font-bold mb-4">🏆 Top 10 utilisateurs</h3>
+              <div className="space-y-2">
+                {stats.progress.topUsers.map((user, index) => (
+                  <div key={index} className="flex items-center justify-between bg-black border border-zinc-800 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">{index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}</div>
+                      <div>
+                        <div className="font-semibold">{user.email}</div>
+                        <div className="text-sm text-zinc-400">Level {user.level} • {user.badges} badges</div>
+                      </div>
+                    </div>
+                    <div className="text-xl font-bold text-orange-500">{user.points} pts</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* USERS TAB */}
+        {activeTab === 'users' && (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold">👥 Liste des utilisateurs</h2>
+                <p className="text-zinc-400 text-sm mt-1">
+                  {users.length} utilisateur{users.length > 1 ? 's' : ''} inscrit{users.length > 1 ? 's' : ''}
+                </p>
+              </div>
+              <button
+                onClick={downloadUsers}
+                disabled={users.length === 0}
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2 disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                Télécharger Excel
+              </button>
+            </div>
+
+            {isLoadingUsers ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-orange-500 border-t-transparent" />
+              </div>
+            ) : users.length === 0 ? (
+              <div className="text-center py-12 text-zinc-500">
+                Aucun utilisateur pour le moment
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-zinc-800">
+                      <th className="text-left py-3 px-4 font-semibold text-zinc-400">Prénom</th>
+                      <th className="text-left py-3 px-4 font-semibold text-zinc-400">Nom</th>
+                      <th className="text-left py-3 px-4 font-semibold text-zinc-400">Email</th>
+                      <th className="text-left py-3 px-4 font-semibold text-zinc-400">Source</th>
+                      <th className="text-left py-3 px-4 font-semibold text-zinc-400">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition">
+                        <td className="py-3 px-4">{user.firstName}</td>
+                        <td className="py-3 px-4">{user.lastName}</td>
+                        <td className="py-3 px-4 text-orange-500">{user.email}</td>
+                        <td className="py-3 px-4 text-sm text-zinc-400">{user.source}</td>
+                        <td className="py-3 px-4 text-sm text-zinc-400">
+                          {new Date(user.createdAt).toLocaleDateString('fr-FR')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* QUIZ TAB */}
+        {activeTab === 'quiz' && stats && (
+          <div className="space-y-6">
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+              <h2 className="text-2xl font-bold mb-4">🎯 Statistiques Quiz</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold mb-3">Distribution des profils</h3>
+                  <div className="space-y-2">
+                    {stats.quiz.resultDistribution.map((result, index) => (
+                      <div key={index} className="flex items-center justify-between bg-black border border-zinc-800 rounded-lg p-3">
+                        <span className="text-zinc-300">{result.type}</span>
+                        <span className="font-bold text-orange-500">{result.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-3">Réponses récentes</h3>
+                  <div className="space-y-2">
+                    {stats.quiz.recent.map((quiz, index) => (
+                      <div key={index} className="bg-black border border-zinc-800 rounded-lg p-3">
+                        <div className="text-sm text-orange-500">{quiz.email}</div>
+                        <div className="text-xs text-zinc-400">{quiz.resultType}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* REFERRALS TAB */}
+        {activeTab === 'referrals' && stats && (
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <div className="text-zinc-400 text-sm mb-2">Total parrainages</div>
+                <div className="text-3xl font-bold">{stats.referrals.total}</div>
+              </div>
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <div className="text-zinc-400 text-sm mb-2">Appels gagnés</div>
+                <div className="text-3xl font-bold text-green-500">{stats.referrals.callsEarned}</div>
+              </div>
+              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+                <div className="text-zinc-400 text-sm mb-2">Taux de conversion</div>
+                <div className="text-3xl font-bold">
+                  {stats.referrals.total > 0 ? Math.round((stats.referrals.callsEarned / stats.referrals.total) * 100) : 0}%
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+              <h2 className="text-2xl font-bold mb-4">🏆 Top Referrers</h2>
+              <div className="space-y-2">
+                {stats.referrals.topReferrers.map((referrer, index) => (
+                  <div key={index} className="flex items-center justify-between bg-black border border-zinc-800 rounded-lg p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">{index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}</div>
+                      <div>
+                        <div className="font-semibold">{referrer.email}</div>
+                        <div className="text-sm text-zinc-400">
+                          {referrer.referrals} parrainage{referrer.referrals > 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+                    {referrer.callEarned && (
+                      <div className="px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-500 rounded-full text-sm font-semibold">
+                        ✓ Appel gagné
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* UPLOAD TAB */}
+        {activeTab === 'upload' && (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 bg-orange-500/10 border border-orange-500/30 rounded-lg flex items-center justify-center">
               <Upload className="w-6 h-6 text-orange-500" />
@@ -310,83 +652,8 @@ export default function AdminPage() {
               <span className="text-zinc-400">Traitement en cours...</span>
             </div>
           )}
-        </div>
-
-        {/* Users List */}
-        <div className="mt-8 bg-zinc-900 border border-zinc-800 rounded-xl p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold">👥 Liste des utilisateurs</h2>
-              <p className="text-zinc-400 text-sm mt-1">
-                {users.length} utilisateur{users.length > 1 ? 's' : ''} inscrit{users.length > 1 ? 's' : ''}
-              </p>
-            </div>
-            <button
-              onClick={downloadUsers}
-              disabled={users.length === 0}
-              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download className="w-4 h-4" />
-              Télécharger Excel
-            </button>
           </div>
-
-          {isLoadingUsers ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-orange-500 border-t-transparent" />
-            </div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500">
-              Aucun utilisateur pour le moment
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-zinc-800">
-                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Prénom</th>
-                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Nom</th>
-                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Email</th>
-                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Source</th>
-                    <th className="text-left py-3 px-4 font-semibold text-zinc-400">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition">
-                      <td className="py-3 px-4">{user.firstName}</td>
-                      <td className="py-3 px-4">{user.lastName}</td>
-                      <td className="py-3 px-4 text-orange-500">{user.email}</td>
-                      <td className="py-3 px-4 text-sm text-zinc-400">{user.source}</td>
-                      <td className="py-3 px-4 text-sm text-zinc-400">
-                        {new Date(user.createdAt).toLocaleDateString('fr-FR')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="mt-8 flex gap-4">
-          <button
-            onClick={() => window.open('/', '_blank')}
-            className="flex-1 px-6 py-3 bg-zinc-900 border border-zinc-800 hover:border-orange-500 rounded-lg font-semibold transition"
-          >
-            👀 Prévisualiser le site
-          </button>
-          <button
-            onClick={() => {
-              localStorage.removeItem('admin_authenticated');
-              setIsAuthenticated(false);
-            }}
-            className="px-6 py-3 bg-zinc-900 border border-zinc-800 hover:border-red-500 text-red-500 rounded-lg font-semibold transition"
-          >
-            🔒 Se déconnecter
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );
