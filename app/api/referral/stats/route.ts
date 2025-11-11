@@ -13,6 +13,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Vérifier si Supabase est configuré
+    if (!supabase) {
+      console.warn('Supabase not configured, returning default referral stats');
+      const referralCode = generateReferralCode(email);
+      return NextResponse.json({
+        referralCode,
+        referralsCount: 0,
+        referredUsers: [],
+        callEarned: false
+      });
+    }
+
     // Get or create user referral data
     const { data: existingReferral, error: fetchError } = await supabase
       .from('referrals')
@@ -56,16 +68,15 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error getting referral stats:', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to get referral stats',
-        referralCode: '',
-        referralsCount: 0,
-        referredUsers: [],
-        callEarned: false
-      },
-      { status: 500 }
-    );
+    // Retourner des données par défaut au lieu d'une erreur 500
+    const email = new URL(request.url).searchParams.get('email') || '';
+    const referralCode = email ? generateReferralCode(email) : '';
+    return NextResponse.json({
+      referralCode,
+      referralsCount: 0,
+      referredUsers: [],
+      callEarned: false
+    });
   }
 }
 

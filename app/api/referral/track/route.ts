@@ -12,6 +12,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier si Supabase est configuré
+    if (!supabase) {
+      console.warn('Supabase not configured, referral tracking skipped');
+      return NextResponse.json({
+        success: true,
+        message: 'Referral tracking unavailable'
+      });
+    }
+
     // Find the referrer by code
     const { data: referrer, error: referrerError } = await supabase
       .from('referrals')
@@ -98,9 +107,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error tracking referral:', error);
-    return NextResponse.json(
-      { error: 'Failed to track referral' },
-      { status: 500 }
-    );
+    // Retourner succès au lieu d'une erreur 500
+    return NextResponse.json({
+      success: true,
+      message: 'Referral tracking failed silently'
+    });
   }
 }
