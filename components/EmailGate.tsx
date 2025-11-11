@@ -91,16 +91,24 @@ export default function EmailGate() {
       const saveUserData = await saveUserResponse.json();
       console.log('✅ User saved to JSON:', saveUserData);
 
-      // Envoyer via EmailJS
+      // Envoyer via EmailJS - Notification d'inscription
       await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
         process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
         {
-          user_name: `${firstName} ${lastName}`,
-          user_email: email,
-          capture_date: new Date().toLocaleString('fr-FR'),
-          source: 'Email Gate',
-          page: typeof window !== 'undefined' ? window.location.pathname : '/'
+          to_name: 'Mathis',
+          firstName: firstName || 'Utilisateur',
+          lastName: lastName || 'Anonyme',
+          email: email,
+          source: mode === 'signup' ? 'Email Gate - Inscription' : 'Email Gate - Connexion',
+          page: typeof window !== 'undefined' ? window.location.pathname : '/',
+          timestamp: new Date().toLocaleString('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
         },
         process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
       );

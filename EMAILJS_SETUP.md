@@ -1,0 +1,201 @@
+# 📧 Configuration EmailJS - SoloVault
+
+## 🎯 Templates EmailJS configurés
+
+### 1. **Email Gate - Inscription/Connexion** (`template_otowczx`)
+**Utilisation** : Notification quand un utilisateur s'inscrit ou se connecte via l'Email Gate
+
+**Variables du template** :
+```
+{{to_name}} - Ton prénom (Mathis)
+{{firstName}} - Prénom de l'utilisateur
+{{lastName}} - Nom de l'utilisateur
+{{email}} - Email de l'utilisateur
+{{source}} - Source (Email Gate - Inscription / Email Gate - Connexion)
+{{page}} - Page où l'utilisateur s'est inscrit
+{{timestamp}} - Date et heure (format: DD/MM/YYYY HH:MM)
+```
+
+**Template suggéré** :
+```
+Bonjour {{to_name}},
+
+Un nouveau visiteur s'est inscrit sur SoloVault ! 🎉
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 INFORMATIONS UTILISATEUR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prénom : {{firstName}}
+Nom : {{lastName}}
+Email : {{email}}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📍 PROVENANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Source : {{source}}
+Page : {{page}}
+Date : {{timestamp}}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Connecte-toi à ton dashboard admin pour voir plus de détails :
+https://solovault.vercel.app/admin
+
+À bientôt,
+SoloVault Notifications
+```
+
+---
+
+### 2. **Demande de devis** (`template_4fzeoqd`)
+**Utilisation** : Notification quand un client demande un devis
+
+**Variables du template** :
+```
+{{to_name}} - Ton prénom (Mathis)
+{{from_name}} - Nom du client
+{{from_email}} - Email du client
+{{budget}} - Budget du projet
+{{project_description}} - Description du projet
+{{features}} - Fonctionnalités souhaitées
+```
+
+**Template actuel** :
+```
+Bonjour {{to_name}},
+
+Vous avez reçu une nouvelle demande de devis !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 INFORMATIONS CLIENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nom : {{from_name}}
+Email : {{from_email}}
+Budget : {{budget}}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 DESCRIPTION DU PROJET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{{project_description}}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ FONCTIONNALITÉS SOUHAITÉES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{{features}}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+---
+
+## 🔧 Configuration dans EmailJS Dashboard
+
+### Étape 1 : Accéder à EmailJS
+1. Va sur https://dashboard.emailjs.com/admin/templates
+2. Connecte-toi avec ton compte
+
+### Étape 2 : Vérifier/Modifier les templates
+
+#### Template 1 : Email Gate (`template_otowczx`)
+1. Clique sur le template `template_otowczx`
+2. **Subject** : `🎉 Nouvelle inscription SoloVault - {{firstName}} {{lastName}}`
+3. **Content** : Copie le template ci-dessus
+4. **To Email** : `mhiguinen235@gmail.com`
+5. **From Name** : `SoloVault Notifications`
+6. **Reply To** : `{{email}}` (pour répondre directement à l'utilisateur)
+7. Clique sur **Save**
+
+#### Template 2 : Demande de devis (`template_4fzeoqd`)
+1. Clique sur le template `template_4fzeoqd`
+2. **Subject** : `💼 Nouvelle demande de devis - {{from_name}}`
+3. **Content** : Le template est déjà configuré
+4. **To Email** : `mhiguinen235@gmail.com`
+5. **From Name** : `SoloVault Devis`
+6. **Reply To** : `{{from_email}}`
+7. Clique sur **Save**
+
+---
+
+## 📊 Quand les emails sont envoyés
+
+| Action | Template utilisé | Données envoyées |
+|--------|------------------|------------------|
+| **Inscription Email Gate** | `template_otowczx` | Prénom, Nom, Email, Source, Page, Date |
+| **Connexion Email Gate** | `template_otowczx` | Email, Source, Page, Date |
+| **Demande de devis** | `template_4fzeoqd` | Nom, Email, Budget, Description, Features |
+| **Message contact** | `template_otowczx` | Nom, Email, Message, Date |
+
+---
+
+## 🧪 Tester les emails
+
+### Test en local
+```bash
+npm run dev
+```
+
+1. Va sur http://localhost:3000
+2. Ouvre l'Email Gate (popup automatique)
+3. Remplis le formulaire et valide
+4. Vérifie ta boîte mail `mhiguinen235@gmail.com`
+
+### Test en production
+1. Va sur https://solovault.vercel.app
+2. Teste l'inscription
+3. Vérifie les emails reçus
+
+---
+
+## 🔍 Debug
+
+### Si les emails ne sont pas reçus
+
+1. **Vérifie les logs dans la console du navigateur** :
+   - Ouvre la console (F12)
+   - Cherche les messages `✅ EmailJS sent` ou `❌ EmailJS error`
+
+2. **Vérifie les variables d'environnement** :
+   ```bash
+   NEXT_PUBLIC_EMAILJS_SERVICE_ID=service_i9zxlc7
+   NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=template_otowczx
+   NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=CRARgnTdiDCeXUgew
+   ```
+
+3. **Vérifie le quota EmailJS** :
+   - Dashboard EmailJS → Usage
+   - Plan gratuit : 200 emails/mois
+
+4. **Vérifie les spams** :
+   - Les emails peuvent arriver dans les spams
+
+---
+
+## 📈 Statistiques EmailJS
+
+Pour voir les statistiques d'envoi :
+1. Va sur https://dashboard.emailjs.com/admin/stats
+2. Tu verras :
+   - Nombre d'emails envoyés
+   - Taux de succès
+   - Erreurs éventuelles
+
+---
+
+## ✅ Checklist
+
+- [x] Template `template_otowczx` configuré
+- [x] Template `template_4fzeoqd` configuré
+- [x] Variables d'environnement ajoutées
+- [x] Email Gate envoie des notifications
+- [x] Demande de devis envoie des notifications
+- [ ] Tests réussis en local
+- [ ] Tests réussis en production
+
+---
+
+**Note** : Les emails sont envoyés à `mhiguinen235@gmail.com` pour toutes les notifications.
